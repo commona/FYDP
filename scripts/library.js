@@ -102,3 +102,12 @@ img.onload = function(){
 }
 
 // load desk locations
+var dataFile = new XMLHttpRequest();
+dataFile.open('get','../libraries/' + queryValue + '.txt',true);
+dataFile.onreadystatechange = function(){
+    if (dataFile.readyState == 4){
+        console.log(dataFile.responseText);
+        alert('txt file read');
+    }
+}
+dataFile.send();
