@@ -1,6 +1,8 @@
-// My personal code
+// http://www.javascripter.net/faq/querystr.htm?test
 
-var intervalID = window.setInterval(draw, 1000);
+// remove query string after loading the library data to make URL cleaner
+
+//var intervalID = window.setInterval(draw, 1000);
 
 var userInput = 1;;
 function pollServer(){
@@ -70,4 +72,33 @@ function draw() {
     timeUpdatedText.innerHTML = "Time updated -- " + d.toLocaleTimeString();
 }
 
-draw();
+//draw();
+
+// Page Initialization
+
+// Get the library selected
+var queryValue = self.location.search;
+queryValue = queryValue.substring(1,queryValue.length);
+console.log(queryValue);
+
+// Display the library name on the page
+if (queryValue == "design-fair")
+    document.getElementById('libraryName').innerHTML = "Design Fair Demo";
+else if (queryValue == "dc-library")
+    document.getElementById('libraryName').innerHTML = "DC Library";
+else if (queryValue == "dp-library")
+    document.getElementById('libraryName').innerHTML = "DP library";
+
+// load library picture
+var img = new Image();
+img.src = "../maps/" + queryValue + ".png";
+img.onload = function(){
+    console.log(img.width);
+    console.log(img.height);
+    var canvas = document.getElementById('canvas');
+    canvas.setAttribute("width", img.width);
+    canvas.setAttribute("height", img.height);
+    canvas.style.backgroundImage = "url('../maps/" + queryValue + ".png')";
+}
+
+// load desk locations
