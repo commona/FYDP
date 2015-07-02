@@ -2,46 +2,27 @@
 
 // remove query string after loading the library data to make URL cleaner
 
-//var intervalID = window.setInterval(draw, 1000);
+var intervalID = window.setInterval(draw, 1000);
 
 var userInput = 1;;
 function pollServer(){
     return userInput;
 }
 
-var seat0 = 0;
-var seat1 = 0;
-var seat2 = 0;
-var seat3 = 0;
-
 var seatStatus = [0,0,0,0];
-var seatSize = 50;
-var seatLocation = [[0,0],[50,0],[100,0],[150,0]];
+var seatSize = 15;
+//var seatLocation = [[0,0],[50,0],[100,0],[150,0]];
+var seatLocation = [];
+var seatIDs = [];
 
 function draw() {
     var canvas = document.getElementById('canvas');
     
     if (canvas.getContext) {
         var ctx = canvas.getContext('2d');
-
-        // ctx.fillRect(25,25,100,100);
-        // ctx.clearRect(45,45,60,60);
-        // ctx.strokeRect(50,50,50,50);
-        //ctx.strokeRect(0,0,50,50);
-        //ctx.strokeRect(50,0,50,50);
-        //ctx.strokeRect(100,0,50,50);
-        //ctx.strokeRect(150,0,50,50);
         
         // clear the canvas
         ctx.clearRect(0,0,canvas.width,canvas.height);
-
-        // Draw seat status
-        ctx.fillStyle = "red";
-        //ctx.fillRect(1,1,48,48);
-        ctx.fillRect(0,0,50,50);
-        ctx.fillStyle = "green";
-        //ctx.fillRect(51,1,48,48);
-        ctx.fillRect(50,0,50,50);
         
         // Draw seat status (2)
         var i;
@@ -54,16 +35,16 @@ function draw() {
                 ctx.fillStyle = "green";
             else
                 ctx.fillStyle = "red";
-            ctx.fillRect(seatLocation[i][0],seatLocation[i][1],seatSize,seatSize);
+            //ctx.fillRect(seatLocation[i][0],seatLocation[i][1],seatSize,seatSize);
+            ctx.beginPath();
+            ctx.arc(seatLocation[i][0],seatLocation[i][1],seatSize,0,2*Math.PI);
+            ctx.fill();
+            
+            // outline the circle
+            ctx.fillStyle = 'black';
+            ctx.stroke();
         }
 
-        //ctx.lineWidth = 5;
-        
-        // Outline the seats
-        ctx.strokeRect(0,0,50,50);
-        ctx.strokeRect(50,0,50,50);
-        ctx.strokeRect(100,0,50,50);
-        ctx.strokeRect(150,0,50,50);
     }
     
     // update the time updated
@@ -72,42 +53,60 @@ function draw() {
     timeUpdatedText.innerHTML = "Time updated -- " + d.toLocaleTimeString();
 }
 
-//draw();
-
 // Page Initialization
+function initializePage(){
+    // Get the library selected
+    var queryValue = self.location.search;
+    queryValue = queryValue.substring(1,queryValue.length);
+    console.log(queryValue);
 
-// Get the library selected
-var queryValue = self.location.search;
-queryValue = queryValue.substring(1,queryValue.length);
-console.log(queryValue);
+    // Display the library name on the page
+    if (queryValue == "design-fair")
+        document.getElementById('libraryName').innerHTML = "Design Fair Demo";
+    else if (queryValue == "dc-library")
+        document.getElementById('libraryName').innerHTML = "DC Library";
+    else if (queryValue == "dp-library")
+        document.getElementById('libraryName').innerHTML = "DP library";
 
-// Display the library name on the page
-if (queryValue == "design-fair")
-    document.getElementById('libraryName').innerHTML = "Design Fair Demo";
-else if (queryValue == "dc-library")
-    document.getElementById('libraryName').innerHTML = "DC Library";
-else if (queryValue == "dp-library")
-    document.getElementById('libraryName').innerHTML = "DP library";
+    // load library picture
+    var img = new Image();
+    img.src = "../maps/" + queryValue + ".png";
+    img.onload = function(){
+        console.log(img.width);
+        console.log(img.height);
+        var canvas = document.getElementById('canvas');
+        canvas.setAttribute("width", img.width);
+        canvas.setAttribute("height", img.height);
+        canvas.style.backgroundImage = "url('../maps/" + queryValue + ".png')";
+    }
 
-// load library picture
-var img = new Image();
-img.src = "../maps/" + queryValue + ".png";
-img.onload = function(){
-    console.log(img.width);
-    console.log(img.height);
-    var canvas = document.getElementById('canvas');
-    canvas.setAttribute("width", img.width);
-    canvas.setAttribute("height", img.height);
-    canvas.style.backgroundImage = "url('../maps/" + queryValue + ".png')";
-}
+    // load desk locations
+    var dataFile = new XMLHttpRequest();
 
-// load desk locations
-var dataFile = new XMLHttpRequest();
-dataFile.open('get','../libraries/' + queryValue + '.txt',true);
-dataFile.onreadystatechange = function(){
-    if (dataFile.readyState == 4){
-        console.log(dataFile.responseText);
-        alert('txt file read');
+    // browser refuses to open local files, so open data file from github when testing on local computer
+    if (self.location.origin == "http://commona.github.io")
+        dataFile.open('get','../libraries/' + queryValue + '.txt',true);
+    else
+        dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '.txt',true);
+
+    dataFile.send();
+    dataFile.onreadystatechange = function(){
+        if (dataFile.readyState == 4){
+            console.log(dataFile.responseText);
+            //alert('txt file read');
+            updateSeatLocations(dataFile.responseText);
+        }
     }
 }
-dataFile.send();
+initializePage();
+
+function updateSeatLocations(str){
+    var lines = str.split('\n');
+    var i;
+    for (i = 0; i < lines.length; i++){
+        var lineValues = lines[i].split(',');
+        seatIDs.push(Number(lineValues[0]));
+        seatLocation.push([Number(lineValues[1]),Number(lineValues[2])]);
+    }
+    draw();
+}
