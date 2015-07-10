@@ -1,5 +1,6 @@
 // http://www.javascripter.net/faq/querystr.htm?test
 
+// TODO:
 // remove query string after loading the library data to make URL cleaner
 
 var intervalID = window.setInterval(draw, 1000);
@@ -14,8 +15,11 @@ var seatSize = 15;
 //var seatLocation = [[0,0],[50,0],[100,0],[150,0]];
 var seatLocation = [];
 var seatIDs = [];
+var pageReady = false;      // keeps track of when the images are loaded and initial seat statuses are received before drawing
 
 function draw() {
+    if (pageReady==false) return;   // check if page is ready before drawing
+    
     var canvas = document.getElementById('canvas');
     
     if (canvas.getContext) {
@@ -78,6 +82,7 @@ function initializePage(){
         canvas.setAttribute("width", img.width);
         canvas.setAttribute("height", img.height);
         canvas.style.backgroundImage = "url('../maps/" + queryValue + ".png')";
+        pageReady = true;
     }
 
     // load desk locations
