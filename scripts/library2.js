@@ -87,7 +87,7 @@ Floor.prototype.updateDisplay = function(){
 
 // Library class
 var Library = function(){
-    this.floors = [];
+    this.floors = new Array();
     this.currentFloor = 1;
     
     // Get the library selected by the user
@@ -123,12 +123,12 @@ var Library = function(){
             var i;
             for (i = 1; i < 1+numFloors; i++){
                 var lineValues = lines[i].split(',');
-                this.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
+                library.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
             }
             
             for (; i < lines.length; i++){
                 var lineValues = lines[i].split(',');
-                this.floors[Number(lineValues[0])].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
+                library.floors[Number(lineValues[0])].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
             }
         }
     }
