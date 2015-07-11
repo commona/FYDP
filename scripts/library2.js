@@ -6,8 +6,10 @@
 // create the classes
 // clean up site initialization code
 // implement code to find groups of empty desks
+// read from data from JSON format
+// check for invalid entries in data files
 
-var intervalID = window.setInterval(draw, 1000);
+//var intervalID = window.setInterval(draw, 1000);
 
 var seatStatus = [0,0,0,0];
 var seatSize = 15;
@@ -17,7 +19,33 @@ var seatIDs = [];
 var pageReady = false;      // keeps track of when the images are loaded and initial seat statuses are received before drawing
 var currentFloor = 1;       // the current floor displayed    
 
-function draw() {
+function updateSeatLocations(str){
+    var lines = str.split('\n');
+    var i;
+    for (i = 0; i < lines.length; i++){
+        var lineValues = lines[i].split(',');
+        seatIDs.push(Number(lineValues[0]));
+        seatLocation.push([Number(lineValues[1]),Number(lineValues[2])]);
+    }
+    draw();
+}
+
+
+// Objects
+var Desk = function(id, x, y){
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.status = 0;
+}
+
+var Floor = function(floorNumber, mapName){
+    this.floorNumber = floorNumber;
+    this.mapName = mapName;
+    this.desks = [];
+}
+
+Floor.prototype.updateDisplay = function(){
     if (pageReady==false) return;   // check if page is ready before drawing
     
     var canvas = document.getElementById('canvas');
@@ -57,13 +85,15 @@ function draw() {
     timeUpdatedText.innerHTML = "Time updated -- " + d.toLocaleTimeString();
 }
 
-// Page Initialization
-function initializePage(){
-    // Get the library selected
+// Library class
+var Library = function(){
+    this.floors = [];
+    this.currentFloor = 1;
+    
+    // Get the library selected by the user
     var queryValue = self.location.search;
     queryValue = queryValue.substring(1,queryValue.length);
-    console.log(queryValue);
-
+    
     // Display the library name on the page
     if (queryValue == "design-fair")
         document.getElementById('libraryName').innerHTML = "Design Fair Demo";
@@ -73,8 +103,40 @@ function initializePage(){
         document.getElementById('libraryName').innerHTML = "DP library";
     else
         return;
+    
+    // load desk locations and IDs
+    var dataFile = new XMLHttpRequest();
+    // browser refuses to open local files, so open data file from github when testing on local computer
+    if (self.location.origin == "http://commona.github.io")
+        dataFile.open('get','../libraries/' + queryValue + '.txt',true);
+    else
+        dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '2.txt',true);
+    
+    dataFile.send();
+    
+    dataFile.onreadystatechange = function(){
+        if (dataFile.readyState == 4){
+            //console.log(dataFile.responseText);
+            var str = dataFile.responseText;
+            var lines = str.split('\n');
+            var numFloors = Number(lines[0]); 
+            var i;
+            for (i = 1; i < 1+numFloors; i++){
+                var lineValues = lines[i].split(',');
+                this.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
+            }
+            
+            for (; i < lines.length; i++){
+                var lineValues = lines[i].split(',');
+                this.floors[Number(lineValues[0])].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
+            }
+        }
+    }
+    
+}
+Library.prototype.initializeDesks = function(){
 
-    // load library picture
+    // load floor picture
     var img = new Image();
     img.src = "../maps/" + queryValue + ".png";
     img.onload = function(){
@@ -87,70 +149,6 @@ function initializePage(){
         pageReady = true;
     }
 
-    // load desk locations
-    var dataFile = new XMLHttpRequest();
-
-    // browser refuses to open local files, so open data file from github when testing on local computer
-    if (self.location.origin == "http://commona.github.io")
-        dataFile.open('get','../libraries/' + queryValue + '.txt',true);
-    else
-        dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '.txt',true);
-
-    dataFile.send();
-    dataFile.onreadystatechange = function(){
-        if (dataFile.readyState == 4){
-            console.log(dataFile.responseText);
-            //alert('txt file read');
-            updateSeatLocations(dataFile.responseText);
-        }
-    }
-}
-initializePage();
-
-function updateSeatLocations(str){
-    var lines = str.split('\n');
-    var i;
-    for (i = 0; i < lines.length; i++){
-        var lineValues = lines[i].split(',');
-        seatIDs.push(Number(lineValues[0]));
-        seatLocation.push([Number(lineValues[1]),Number(lineValues[2])]);
-    }
-    draw();
-}
-
-
-// Objects
-var Desk = function(id, x, y, status){
-    this.id = id;
-    this.x = x;
-    this.y = y;
-    this.status = status;
-}
-
-var Floor = function(){
-    this.desks = [];
-}
-Floor.prototype.updateDesks = function(){
-    var dataFile = new XMLHttpRequest();
-
-    // browser refuses to open local files, so open data file from github when testing on local computer
-    if (self.location.origin == "http://commona.github.io")
-        dataFile.open('get','../libraries/' + queryValue + '.txt',true);
-    else
-        dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '.txt',true);
-
-    dataFile.send();
-    dataFile.onreadystatechange = function(){
-        if (dataFile.readyState == 4){
-            updateSeatLocations(dataFile.responseText);
-        }
-    }
-}
-
-var Library = function(){
-    
-}
-Library.prototype.initializeDesks = function(){
     
 }
 Library.prototype.updateDesks = function(){
@@ -158,4 +156,4 @@ Library.prototype.updateDesks = function(){
 }
 
 
-
+var library = new Library();
