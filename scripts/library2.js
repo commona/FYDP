@@ -151,7 +151,7 @@ var Library = function(){
             for (i = 1; i < 1+numFloors; i++){
                 var lineValues = lines[i].split(',');
                 library.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
-                
+                console.log("created floor" + lineValues[0]);
                 // set the current floor as the first floor in the data file
                 if (i == 1)
                     library.currentFloor = Number(lineValues[0]);
