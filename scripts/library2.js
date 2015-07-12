@@ -148,7 +148,7 @@ var Library = function(){
             var lines = str.split('\n');
             var numFloors = Number(lines[0]); 
             var i;
-            console.log("starting to create floors...");
+            console.log("starting to create floors..., numfloors = " + numFloors);
             for (i = 1; i < 1+numFloors; i++){
                 var lineValues = lines[i].split(',');
                 library.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
