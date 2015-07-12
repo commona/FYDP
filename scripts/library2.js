@@ -3,21 +3,19 @@
 // TODO:
 // remove query string after loading the library data to make URL cleaner
 // figure out way to implement seat size (make it a property of the floor?)
-// create the classes
-// clean up site initialization code
 // implement code to find groups of empty desks
 // read from data from JSON format
 // check for invalid entries in data files
+// find workaround for callback functions
 
-//var intervalID = window.setInterval(draw, 1000);
+// COMMON CONSOLE COMMANDS
+// library.floors[1].desks[0].status
 
-var seatStatus = [0,0,0,0];
+
 var seatSize = 15;
-//var seatLocation = [[0,0],[50,0],[100,0],[150,0]];
-var seatLocation = [];
-var seatIDs = [];
-var pageReady = false;      // keeps track of when the images are loaded and initial seat statuses are received before drawing
-var currentFloor = 1;       // the current floor displayed    
+
+
+var pageReady = false;      // keeps track of when the images are loaded and initial seat statuses are received before drawing  
 
 function updateSeatLocations(str){
     var lines = str.split('\n');
@@ -46,7 +44,7 @@ var Floor = function(floorNumber, mapName){
 }
 
 Floor.prototype.updateDisplay = function(){
-    if (pageReady==false) return;   // check if page is ready before drawing
+    // (pageReady==false) return;   // check if page is ready before drawing
     
     var canvas = document.getElementById('canvas');
     
@@ -58,18 +56,24 @@ Floor.prototype.updateDisplay = function(){
         
         // Draw seat status (2)
         var i;
-        for (i = 0; i < seatStatus.length; i++){
-            if (seatStatus[i] == 0)
-                ctx.fillStyle = "red";
-            else if (seatStatus[i] == 1)
-                ctx.fillStyle = "orange";
-            else if (seatStatus[i] == 2)
-                ctx.fillStyle = "green";
-            else
-                ctx.fillStyle = "red";
+        for (i = 0; i < this.desks.length; i++){
+            switch(this.desks[i].status){
+                case 0:
+                    ctx.fillStyle = "red";
+                    break;
+                case 1:
+                    ctx.fillStyle = "orange";
+                    break;
+                case 2:
+                    ctx.fillStyle = "green";
+                    break;
+                default:
+                    ctx.fillStyle = "red";
+            }
+
             //ctx.fillRect(seatLocation[i][0],seatLocation[i][1],seatSize,seatSize);
             ctx.beginPath();
-            ctx.arc(seatLocation[i][0],seatLocation[i][1],seatSize,0,2*Math.PI);
+            ctx.arc(this.desks[i].x, this.desks[i].y, seatSize, 0, 2*Math.PI);
             ctx.fill();
             
             // outline the circle
@@ -83,6 +87,29 @@ Floor.prototype.updateDisplay = function(){
     var d = new Date();
     var timeUpdatedText = document.getElementById('timeUpdated');
     timeUpdatedText.innerHTML = "Time updated -- " + d.toLocaleTimeString();
+    console.log("time updated");
+}
+
+var intervalID;
+Floor.prototype.updateMap = function(){
+    console.log("starting updateMap()");
+    // load floor map
+    var img = new Image();
+    img.src = "../maps/" + this.mapName;
+    img.onload = function(){
+        console.log(img.width);
+        console.log(img.height);
+        var canvas = document.getElementById('canvas');
+        canvas.setAttribute("width", img.width);
+        canvas.setAttribute("height", img.height);
+        canvas.style.backgroundImage = "url('../maps/" + library.floors[library.currentFloor].mapName + "')";
+        console.log("map displayed");
+        pageReady = true;       // maybe this can be removed
+        
+        library.floors[library.currentFloor].updateDisplay();
+        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay()}, 1000);
+        //var intervalID = window.setInterval(library.floors[library.currentFloor].updateDisplay(), 1000);        // remember to remove interval when switching floors
+    }
 }
 
 // Library class
@@ -124,36 +151,28 @@ var Library = function(){
             for (i = 1; i < 1+numFloors; i++){
                 var lineValues = lines[i].split(',');
                 library.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
+                
+                // set the current floor as the first floor in the data file
+                if (i == 1)
+                    library.currentFloor = Number(lineValues[0]);
             }
             
             for (; i < lines.length; i++){
                 var lineValues = lines[i].split(',');
                 library.floors[Number(lineValues[0])].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
             }
+            
+            // paint picture of floor and start drawing the seat statuses
+            library.floors[library.currentFloor].updateMap();
         }
     }
     
 }
-Library.prototype.initializeDesks = function(){
 
-    // load floor picture
-    var img = new Image();
-    img.src = "../maps/" + queryValue + ".png";
-    img.onload = function(){
-        console.log(img.width);
-        console.log(img.height);
-        var canvas = document.getElementById('canvas');
-        canvas.setAttribute("width", img.width);
-        canvas.setAttribute("height", img.height);
-        canvas.style.backgroundImage = "url('../maps/" + queryValue + ".png')";
-        pageReady = true;
-    }
-
-    
-}
 Library.prototype.updateDesks = function(){
     
 }
+
 
 
 var library = new Library();
