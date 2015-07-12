@@ -135,7 +135,7 @@ var Library = function(){
     var dataFile = new XMLHttpRequest();
     // browser refuses to open local files, so open data file from github when testing on local computer
     if (self.location.origin == "http://commona.github.io")
-        dataFile.open('get','../libraries/' + queryValue + '.txt',true);
+        dataFile.open('get','../libraries/' + queryValue + '2.txt',true);
     else
         dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '2.txt',true);
     
