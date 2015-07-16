@@ -4,7 +4,6 @@
 // remove query string after loading the library data to make URL cleaner
 // figure out way to implement seat size (make it a property of the floor?)
 // implement code to find groups of empty desks
-// read from data from JSON format
 // check for invalid entries in data files
 // find workaround for callback functions
 
@@ -13,6 +12,24 @@
 
 
 var seatSize = 15;
+var seatStatus = [
+    {
+        "id" : 100,
+        "status" : 0
+    },
+    {
+        "id" : 101,
+        "status" : 1
+    },
+    {
+        "id" : 102,
+        "status" : 2
+    },
+    {
+        "id" : 103,
+        "status" : 1
+    },
+]
 
 
 var pageReady = false;      // keeps track of when the images are loaded and initial seat statuses are received before drawing  
@@ -45,6 +62,21 @@ var Floor = function(floorNumber, mapName){
 
 Floor.prototype.updateDisplay = function(){
     // (pageReady==false) return;   // check if page is ready before drawing
+    
+    // update seat statuses
+    var i;
+    for (i = 0; i < this.desks.length ; i++){
+        var j = 0;
+        while( j < seatStatus.length && this.desks[i].id != seatStatus[j].id ){
+            j++
+        }
+        if ( j < seatStatus.length ){
+            this.desks[i].status = seatStatus[j].status;
+        }
+        else{
+            console.log( "seat data not found: " + this.desks[i].id );
+        }
+    }
     
     var canvas = document.getElementById('canvas');
     
