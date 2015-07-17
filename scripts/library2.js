@@ -1,14 +1,19 @@
 // http://www.javascripter.net/faq/querystr.htm?test
+// http://stackoverflow.com/questions/1830927/how-do-i-make-a-link-that-goes-no-where
 
 // TODO:
+// add legend
+// implement code to find groups of empty desks
 // remove query string after loading the library data to make URL cleaner
 // figure out way to implement seat size (make it a property of the floor?)
-// implement code to find groups of empty desks
 // check for invalid entries in data files
-// find workaround for callback functions
+// find workaround for callback functions (clean up callback functions as well)
+// put the entire app all on one page?
+// investigate possible failure points in script
 
 // COMMON CONSOLE COMMANDS
 // library.floors[1].desks[0].status
+// clearInterval(1)
 
 
 var seatSize = 15;
@@ -29,22 +34,23 @@ var seatStatus = [
         "id" : 103,
         "status" : 1
     },
+    {
+        "id" : 200,
+        "status" : 1
+    },
+    {
+        "id" : 201,
+        "status" : 1
+    },
+    {
+        "id" : 202,
+        "status" : 1
+    },
+    {
+        "id" : 203,
+        "status" : 1
+    },
 ]
-
-
-var pageReady = false;      // keeps track of when the images are loaded and initial seat statuses are received before drawing  
-
-function updateSeatLocations(str){
-    var lines = str.split('\n');
-    var i;
-    for (i = 0; i < lines.length; i++){
-        var lineValues = lines[i].split(',');
-        seatIDs.push(Number(lineValues[0]));
-        seatLocation.push([Number(lineValues[1]),Number(lineValues[2])]);
-    }
-    draw();
-}
-
 
 // Objects
 var Desk = function(id, x, y){
@@ -54,14 +60,13 @@ var Desk = function(id, x, y){
     this.status = 0;
 }
 
-var Floor = function(floorNumber, mapName){
-    this.floorNumber = floorNumber;
+var Floor = function(name, mapName){
+    this.name = name;
     this.mapName = mapName;
     this.desks = [];
 }
 
 Floor.prototype.updateDisplay = function(){
-    // (pageReady==false) return;   // check if page is ready before drawing
     
     // update seat statuses
     var i;
@@ -94,7 +99,7 @@ Floor.prototype.updateDisplay = function(){
                     ctx.fillStyle = "red";
                     break;
                 case 1:
-                    ctx.fillStyle = "orange";
+                    ctx.fillStyle = "yellow";
                     break;
                 case 2:
                     ctx.fillStyle = "green";
@@ -122,6 +127,8 @@ Floor.prototype.updateDisplay = function(){
     console.log("time updated");
 }
 
+
+
 var intervalID;
 Floor.prototype.updateMap = function(){
     console.log("starting updateMap()");
@@ -136,10 +143,11 @@ Floor.prototype.updateMap = function(){
         canvas.setAttribute("height", img.height);
         canvas.style.backgroundImage = "url('../maps/" + library.floors[library.currentFloor].mapName + "')";
         console.log("map displayed");
-        pageReady = true;       // maybe this can be removed
         
         library.floors[library.currentFloor].updateDisplay();
-        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay()}, 1000);
+        clearInterval(intervalID);
+        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, 5000);
+        library.floors[library.currentFloor].updateDisplay()    // instantly redraw
         //var intervalID = window.setInterval(library.floors[library.currentFloor].updateDisplay(), 1000);        // remember to remove interval when switching floors
     }
 }
@@ -147,7 +155,7 @@ Floor.prototype.updateMap = function(){
 // Library class
 var Library = function(){
     this.floors = new Array();
-    this.currentFloor = 1;
+    this.currentFloor = 0;
     
     // Get the library selected by the user
     var queryValue = self.location.search;
@@ -175,37 +183,86 @@ var Library = function(){
     
     dataFile.onreadystatechange = function(){
         if (dataFile.readyState == 4){
-            //console.log(dataFile.responseText);
+
             var str = dataFile.responseText;
             var lines = str.split('\n');
             var numFloors = Number(lines[0]); 
             var i;
             console.log("starting to create floors..., numfloors = " + numFloors);
+            
+            // read in floor information from data file (name, map name, etc.)
             for (i = 1; i < 1+numFloors; i++){
                 var lineValues = lines[i].split(',');
-                library.floors[ Number(lineValues[0]) ] = new Floor( Number(lineValues[0]), lineValues[1] );
+                library.floors[ i-1 ] = new Floor( lineValues[0], lineValues[1] );
                 console.log("created floor" + lineValues[0]);
-                // set the current floor as the first floor in the data file
-                if (i == 1)
-                    library.currentFloor = Number(lineValues[0]);
             }
-            
+            // read in desk information (ID, location)
             for (; i < lines.length; i++){
                 var lineValues = lines[i].split(',');
-                library.floors[Number(lineValues[0])].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
+                var floorIndex = library.getFloorIndex(lineValues[0]);
+                library.floors[floorIndex].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
             }
             
-            // paint picture of floor and start drawing the seat statuses
-            library.floors[library.currentFloor].updateMap();
+            // list out available floors
+            library.updateFloorLinks();
+
+            // paint picture of the first floor in the floors array and start drawing the seat statuses
+            library.floors[0].updateMap();
         }
     }
     
 }
 
-Library.prototype.updateDesks = function(){
+// Update the floor links, and disabling the link for the currently displayed floor
+Library.prototype.updateFloorLinks = function(){
+    //clear the current links
+    document.getElementById('floorList').innerHTML = "";
     
+    var i;
+    for (i = 0; i < this.floors.length; i++){
+        if (this.currentFloor == i){
+            var text = document.createTextNode(this.floors[i].name);
+            document.getElementById('floorList').appendChild(text);
+        }
+        else{
+            var a = document.createElement('a');
+            var text = document.createTextNode(this.floors[i].name);
+            a.appendChild(text);
+            a.href = "javascript:";     // this makes the link do nothing when clicked
+            console.log(library);
+            //a.addEventListener('click', function(){library.changeFloor(library.floors[i].name)}, false);
+            a.onclick = function(){library.changeFloor( this.innerHTML );};
+            document.getElementById('floorList').appendChild(a);
+            
+        }
+        
+        // add space if not at the last floor
+        if (i < this.floors.length - 1){
+            var space = document.createTextNode(" ");
+            document.getElementById('floorList').appendChild(space);
+        }
+    }
 }
 
+// Change the floor displayed
+Library.prototype.changeFloor = function(floorName){
+    console.log("Change floor request");
+    var floorIndex = this.getFloorIndex(floorName); 
+    library.currentFloor = floorIndex;
+    library.floors[floorIndex].updateMap(); // may want to disable redraw before this
+    library.updateFloorLinks();
+}
 
+// (utility function) get index of floor, given the name of the floor
+Library.prototype.getFloorIndex = function(floorName){
+    var i = 0;
+    while( i < this.floors.length && this.floors[i].name != floorName ){
+        i++;
+    }
+    if ( i < this.floors.length)
+        return i;
+    else
+        return -1;
+}
 
 var library = new Library();
