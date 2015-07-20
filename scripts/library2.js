@@ -2,14 +2,17 @@
 // http://stackoverflow.com/questions/1830927/how-do-i-make-a-link-that-goes-no-where
 
 // TODO:
-// add legend
 // implement code to find groups of empty desks
-// remove query string after loading the library data to make URL cleaner
-// figure out way to implement seat size (make it a property of the floor?)
+// implement floor with 50 desks
 // check for invalid entries in data files
 // find workaround for callback functions (clean up callback functions as well)
-// put the entire app all on one page?
 // investigate possible failure points in script
+// comment code
+
+// TODO (next term?):
+// remove query string after loading the library data to make URL cleaner
+// figure out way to implement seat size (make it a property of the floor?)
+// put the entire app all on one page?
 
 // COMMON CONSOLE COMMANDS
 // library.floors[1].desks[0].status
@@ -17,6 +20,8 @@
 
 
 var seatSize = 15;
+
+// provide static occupancy data until the server is built and running
 var seatStatus = [
     {
         "id" : 100,
@@ -53,10 +58,11 @@ var seatStatus = [
 ]
 
 // Objects
-var Desk = function(id, x, y){
+var Desk = function(id, x, y, size){
     this.id = id;
     this.x = x;
     this.y = y;
+    this.size = size;
     this.status = 0;
 }
 
@@ -110,7 +116,7 @@ Floor.prototype.updateDisplay = function(){
 
             //ctx.fillRect(seatLocation[i][0],seatLocation[i][1],seatSize,seatSize);
             ctx.beginPath();
-            ctx.arc(this.desks[i].x, this.desks[i].y, seatSize, 0, 2*Math.PI);
+            ctx.arc(this.desks[i].x, this.desks[i].y, this.desks[i].size, 0, 2*Math.PI);
             ctx.fill();
             
             // outline the circle
@@ -121,10 +127,10 @@ Floor.prototype.updateDisplay = function(){
     }
     
     // update the time updated
-    var d = new Date();
-    var timeUpdatedText = document.getElementById('timeUpdated');
-    timeUpdatedText.innerHTML = "Time updated -- " + d.toLocaleTimeString();
-    console.log("time updated");
+    //var d = new Date();
+    //var timeUpdatedText = document.getElementById('timeUpdated');
+    //timeUpdatedText.innerHTML = "Time updated -- " + d.toLocaleTimeString();
+    console.log("seat status and picture updated");
 }
 
 
@@ -163,7 +169,7 @@ var Library = function(){
     
     // Display the library name on the page
     if (queryValue == "design-fair")
-        document.getElementById('libraryName').innerHTML = "Design Fair Demo";
+        document.getElementById('libraryName').innerHTML = "Design Fair";
     else if (queryValue == "dc-library")
         document.getElementById('libraryName').innerHTML = "DC Library";
     else if (queryValue == "dp-library")
@@ -200,7 +206,7 @@ var Library = function(){
             for (; i < lines.length; i++){
                 var lineValues = lines[i].split(',');
                 var floorIndex = library.getFloorIndex(lineValues[0]);
-                library.floors[floorIndex].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]) ) );
+                library.floors[floorIndex].desks.push( new Desk( Number(lineValues[1]), Number(lineValues[2]), Number(lineValues[3]),  Number(lineValues[4])) );
             }
             
             // list out available floors
