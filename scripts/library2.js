@@ -19,7 +19,6 @@
 // clearInterval(1)
 
 
-
 // provide static occupancy data until the server is built and running
 var seatStatus = [
     {
@@ -154,6 +153,7 @@ Floor.prototype.updateMap = function(){
 var Library = function(){
     this.floors = new Array();
     this.currentFloor = 0;
+    this.name = "";
     
     // Get the library selected by the user
     var queryValue = self.location.search;
@@ -169,9 +169,10 @@ var Library = function(){
     else
         return;
     
-    // load desk locations and IDs
+    // load data file
     var dataFile = new XMLHttpRequest();
-    // browser refuses to open local files, so open data file from github when testing on local computer
+    
+    // web browser refuses to open local files, so open data file from Github when testing the site on a local computer
     if (self.location.origin == "http://commona.github.io")
         dataFile.open('get','../libraries/' + queryValue + '.csv',true);
     else
@@ -186,21 +187,26 @@ var Library = function(){
             var str = dataFile.responseText;
             var lines = str.split('\n');
             
-            // read in the number of floors
+            // read and set the library name
             var lineValues = lines[0].split(',');
+            library.name = lineValues[0];
+            document.getElementById('libraryName').innerHTML = library.name;
+            
+            // read in the number of floors
+            var lineValues = lines[1].split(',');
             var numFloors = Number(lineValues[0]); 
             
             var i;
             console.log("starting to create floors..., numfloors = " + numFloors);
             
             // read in floor information from data file (name, map name, etc.)
-            for (i = 1; i < 1+numFloors; i++){
+            for (i = 2; i < 2+numFloors; i++){
                 lineValues = lines[i].split(',');
-                library.floors[ i-1 ] = new Floor( lineValues[0], lineValues[1] );
+                library.floors[ i-2 ] = new Floor( lineValues[0], lineValues[1] );
                 console.log("created floor" + lineValues[0]);
             }
             // read in desk information (ID, location)
-            for (; i < lines.length-1; i++){        // length - 1 because the last line is empty
+            for (; i < lines.length-1; i++){        // length-1 because the last line is empty
                 lineValues = lines[i].split(',');
                 var floorIndex = library.getFloorIndex(lineValues[0]);
                 console.log(floorIndex + " " + lineValues[0]);
