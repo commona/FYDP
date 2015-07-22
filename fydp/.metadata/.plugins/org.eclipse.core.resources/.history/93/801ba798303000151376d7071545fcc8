@@ -1,0 +1,5 @@
+package com.fydp.webservices.seatspotter.database.restapis;
+
+public class RestApiLibraries {
+
+}

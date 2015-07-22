@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<servers>
+  <server auto-publish-setting="2" auto-publish-time="1" configuration-id="/Servers/fydp at localhost-config" deployDir="wtpwebapps" hostname="localhost" id="fydp at localhost" name="fydp at localhost" runtime-id="fydp at localhost" server-type="org.eclipse.jst.server.tomcat.80" server-type-id="org.eclipse.jst.server.tomcat.80" start-timeout="45" stop-timeout="15" testEnvironment="true" timestamp="3">
+    <list key="modules" value0="seatspotter::org.eclipse.jst.jee.server:seatspotter::jst.web::2.5"/>
+  </server>
+</servers>

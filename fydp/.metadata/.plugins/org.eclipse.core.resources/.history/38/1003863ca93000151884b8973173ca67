@@ -1,0 +1,30 @@
+package com.fydp.webservices.seatspotter.database.restapis;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import com.fydp.webservices.seatspotter.database.model.Library;
+
+@Path("/library")
+public class RestApiLibraries {
+
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Library> getLibraries(){
+		
+		Library l1 = new Library(1, "Davis Center Library");
+		Library l2 = new Library(2, "Dana Porter Library");
+		
+		List <Library> libraries = new ArrayList<Library>();
+		libraries.add(l1);
+		libraries.add(l2);
+		
+		return libraries;
+	}
+	
+}

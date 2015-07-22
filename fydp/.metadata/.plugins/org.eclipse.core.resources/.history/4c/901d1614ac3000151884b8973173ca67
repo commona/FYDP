@@ -1,0 +1,28 @@
+package com.fydp.webservices.seatspotter.services;
+
+public class RestApiFloors {
+	
+	@GET
+	@Produces(MediaType.APPLICATION_XML)
+	public Response getFloors(){
+		
+		ResultSet result;
+		ArrayList<Floor> floor = new ArrayList<Floor>();
+		
+		result = DBConnection.executeGetFloors();
+		
+		try{
+			while (result.next()){
+				floor.add(new Floor(result.getInt("FloorId"), result.getInt("LibraryId"), result.getString("FloorLevel")));
+			}
+		} catch (Exception e){
+			
+		}
+		
+		Floor entity = floor.get(0);
+		//GenericEntity <List<Floor>> entity = new GenericEntity<List<Floor>>(floor){};
+		
+		return Response.ok().entity(entity).build();
+	}
+
+}
