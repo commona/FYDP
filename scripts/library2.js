@@ -2,11 +2,12 @@
 // http://stackoverflow.com/questions/1830927/how-do-i-make-a-link-that-goes-no-where
 
 // TODO:
-// add library name to data file
 // implement code to find groups of empty desks
-// check for invalid entries in data files
-// find workaround for callback functions (clean up callback functions as well)
+// implement DC library
+// compress PNG files to decrease load time
+// create new methods to replace current implementation of callback functions
 // investigate possible failure points in script
+// check for invalid entries in data files
 // comment code
 
 // TODO (next term?):
@@ -16,7 +17,7 @@
 
 // COMMON CONSOLE COMMANDS
 // library.floors[1].desks[0].status
-// clearInterval(1)
+// clearInterval(intervalID)
 
 
 // provide static occupancy data until the server is built and running
@@ -152,7 +153,7 @@ Floor.prototype.updateMap = function(){
 // Library class
 var Library = function(){
     this.floors = new Array();
-    this.currentFloor = 0;
+    this.currentFloor = 0;      // hold the index of the current floor
     this.name = "";
     
     // Get the library selected by the user
@@ -275,5 +276,69 @@ Library.prototype.getFloorIndex = function(floorName){
         return -1;
 }
 
+Floor.prototype.calcMinDistances = function(){
+    
+    console.log(this);
+    
+    var locations = [];
+    var i;
+    for(i = 0; i < this.desks.length; i++){
+        locations.push([this.desks[i].x, this.desks[i].y]);
+    }
+    console.log(locations);
+    
+    var minDistances = [];
+    var j;
+    for(i = 0; i < this.desks.length; i++){
+        var distances = [];
+        for (j = 0; j < this.desks.length; j++){
+            if (j != i){
+                distances.push( Math.sqrt( Math.pow(this.desks[i].x - this.desks[j].x, 2) + Math.pow(this.desks[i].y - this.desks[j].y, 2) ));
+            }
+        }
+        minDistances.push(Math.min.apply(Math, distances));     // get the distance from this desk to the next closest desk
+        console.log("distances of index " + i);
+        console.log(distances);
+    }
+    
+    console.log(minDistances);
+    minDistances.sort();
+    var median;
+    if (minDistances.length % 2 == 0)
+        median = (minDistances[minDistances.length/2 - 1] + minDistances[minDistances.length/2 - 1])/2
+    else
+        median = minDistances[minDistances.length/2 - 0.5];
+    console.log("median: " + median);
+}
+
 // start the application
 var library = new Library();
+
+
+
+
+
+
+
+
+
+
+
+
+
+// dummyfunction = function(){
+    
+// }
+
+// dummyfunction();
+
+// console.log('starting test....adsfas');
+// var dataFile = new XMLHttpRequest();
+
+// dataFile.open('get','http://20.20.2.57/Seatspotter/libraries',true);
+// dataFile.send();
+// dataFile.onreadystatechange = function(){
+    // var str = dataFile.responseText;
+    // console.log("data pulled from link: ");
+    // console.log(str);
+// }
