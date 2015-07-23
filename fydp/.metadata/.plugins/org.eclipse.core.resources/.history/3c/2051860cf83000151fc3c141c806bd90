@@ -1,0 +1,54 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Floor {
+	
+	private int floorId;
+	private String floorLevel;
+	private int totalDesks;
+	private int emptyDesks;
+	private int unknownState;
+	
+	public Floor(){}
+	
+	public Floor(int floorId, String floorLevel, int totalDesks, int emptyDesks, int unknownState){
+		this.floorId=floorId;
+		this.floorLevel=floorLevel;
+		this.totalDesks=totalDesks;
+		this.emptyDesks=emptyDesks;
+		this.unknownState=unknownState;
+	}
+
+	public int getFloorId() {
+		return floorId;
+	}
+
+	public void setFloorId(int floorId) {
+		this.floorId = floorId;
+	}
+
+	public int getLibraryId() {
+		return libraryId;
+	}
+
+	public void setLibraryId(int libraryId) {
+		this.libraryId = libraryId;
+	}
+
+	public String getFloorLevel() {
+		return floorLevel;
+	}
+
+	public void setFloorLevel(String floorLevel) {
+		this.floorLevel = floorLevel;
+	}
+
+	@Override
+	public String toString() {
+		return "Floor [floorId=" + floorId + ", libraryId=" + libraryId
+				+ ", floorLevel=" + floorLevel + "]";
+	}
+
+}

@@ -12,11 +12,23 @@ public class Library {
 	@XmlElement
 	private String libraryName;
 	
+	@XmlElement
+	private int totalDesks;
+	
+	@XmlElement
+	private int emptyDesks;
+	
+	@XmlElement
+	private int unknownState;
+	
 	public Library(){}
 	
-	public Library(int libraryId, String libraryName) {
+	public Library(int libraryId, String libraryName, int totalDesks, int emptyDesks, int unknownState) {
 		this.libraryId = libraryId;
 		this.libraryName = libraryName;
+		this.totalDesks = totalDesks;
+		this.emptyDesks = emptyDesks;
+		this.unknownState = unknownState;
 	}
 
 	public int getLibraryId() {
@@ -35,12 +47,35 @@ public class Library {
 		this.libraryName = libraryName;
 	}
 
+	public int getTotalDesks() {
+		return totalDesks;
+	}
+
+	public void setTotalDesks(int totalDesks) {
+		this.totalDesks = totalDesks;
+	}
+
+	public int getEmptyDesks() {
+		return emptyDesks;
+	}
+
+	public void setEmptyDesks(int emptyDesks) {
+		this.emptyDesks = emptyDesks;
+	}
+
+	public int getUnknownState() {
+		return unknownState;
+	}
+
+	public void setUnknownState(int unknownState) {
+		this.unknownState = unknownState;
+	}
+
 	@Override
 	public String toString() {
 		return "Library [libraryId=" + libraryId + ", libraryName="
-				+ libraryName + "]";
+				+ libraryName + ", totalDesks=" + totalDesks + ", emptyDesks="
+				+ emptyDesks + ", unknownState=" + unknownState + "]";
 	}
 	
-	
-
 }

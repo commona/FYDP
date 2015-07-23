@@ -1,0 +1,68 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Library {
+	
+	@XmlElement
+	private int libraryId;
+	
+	@XmlElement
+	private String libraryName;
+	
+	private int freeSeats;
+	private int totalSeats;
+	
+	public Library(){}
+	
+	public Library(int libraryId, String libraryName, int freeSeats, int totalSeats) {
+		this.libraryId = libraryId;
+		this.libraryName = libraryName;
+		this.freeSeats = freeSeats;
+		this.totalSeats = totalSeats;
+	}
+
+	public int getLibraryId() {
+		return libraryId;
+	}
+
+	public void setLibraryId(int libraryId) {
+		this.libraryId = libraryId;
+	}
+
+	public String getLibraryName() {
+		return libraryName;
+	}
+
+	public void setLibraryName(String libraryName) {
+		this.libraryName = libraryName;
+	}
+
+	public int getFreeSeats() {
+		return freeSeats;
+	}
+
+	public void setFreeSeats(int freeSeats) {
+		this.freeSeats = freeSeats;
+	}
+
+	public int getTotalSeats() {
+		return totalSeats;
+	}
+
+	public void setTotalSeats(int totalSeats) {
+		this.totalSeats = totalSeats;
+	}
+
+	@Override
+	public String toString() {
+		return "Library [libraryId=" + libraryId + ", libraryName="
+				+ libraryName + ", freeSeats=" + freeSeats + ", totalSeats="
+				+ totalSeats + "]";
+	}
+	
+	
+
+}

@@ -1,0 +1,32 @@
+package com.fydp.webservices.seatspotter.database;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class DBManager {
+	
+	public static ResultSet executeProcedureWithNoParam(String procName){
+		
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = DBConnection.createConnection();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			String pSql = "{call " + procName + "}";
+			Statement stmt = dbConn.createStatement();
+			return stmt.executeQuery(pSql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static ResultSet executeProcedureWithParam(){
+		return null;
+	}
+
+}
