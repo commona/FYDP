@@ -30,15 +30,15 @@ var seatStatus = [
     },
     {
         "id" : 101,
-        "status" : 1
-    },
-    {
-        "id" : 102,
         "status" : 2
     },
     {
+        "id" : 102,
+        "status" : 0
+    },
+    {
         "id" : 103,
-        "status" : 1
+        "status" : 2
     },
     {
         "id" : 200,
@@ -55,6 +55,18 @@ var seatStatus = [
     {
         "id" : 203,
         "status" : 1
+    },
+    {
+        "id" : 301,
+        "status" : 2
+    },
+    {
+        "id" : 302,
+        "status" : 2
+    },
+    {
+        "id" : 303,
+        "status" : 2
     },
 ]
 
@@ -86,7 +98,7 @@ Floor.prototype.updateDisplay = function(){
             this.desks[i].status = seatStatus[j].status;
         }
         else{
-            console.log( "seat data not found: " + this.desks[i].id );
+            //console.log( "seat data not found: " + this.desks[i].id );
         }
     }
     
@@ -306,7 +318,7 @@ Floor.prototype.calcMinDistances = function(){
         median = (minDistances[minDistances.length/2 - 1] + minDistances[minDistances.length/2 - 1])/2
     else
         median = minDistances[minDistances.length/2 - 0.5];
-    console.log("median: " + median);
+    //console.log("median: " + median);
     
     // calculate the upper bound and lower bound
     var upperBound = median * 1.25;
@@ -320,31 +332,43 @@ Floor.prototype.calcMinDistances = function(){
         if (freeDesks[i].status != 2)
             freeDesks.splice(i,1);
     }
-    console.log(freeDesks);
+    //console.log(freeDesks);
     
     // go through the new desk array and try to find available desks that are within the median distance, taking out those are aren't within a group
-    var numFree = 2;
+    var numFree = 3;
     var foundFlag = false;
+    var checkingIndex = 0;      // keeps track of the desk currently being checked
+    var connectedIndices = [];  // keeps track of the group of free desks found
+    connectedIndices.push(0);   // check the first index
     while (freeDesks.length > 0){
-        var connectedIndices = [];
-        connectedIndices.push(0);
         for (i = 1; i < freeDesks.length; i++){
-            var distance = Math.sqrt( Math.pow(freeDesks[i].x - freeDesks[0].x, 2) + Math.pow(freeDesks[i].y - freeDesks[0].y, 2));
+            var distance = Math.sqrt( Math.pow(freeDesks[i].x - freeDesks[checkingIndex].x, 2) + Math.pow(freeDesks[i].y - freeDesks[checkingIndex].y, 2));
             if ( distance <= upperBound && distance >= lowerBound )
                 connectedIndices.push(i);
             if (connectedIndices.length == numFree)
                 break;
         }
+        
+        console.log("connected indices");
+        console.log(connectedIndices);
+        
+        // check if enough adjacent free desks have been found
         if (connectedIndices.length == numFree){
-            console.log(connectedIndices)
+            //console.log(connectedIndices)
             foundFlag = true;
             break;
         }
+        // check other desks in group to see if there are more free desks close by
+        if (checkingIndex < connectedIndices.length - 1){
+            checkingIndex++;
+        }
+        // if every desk in the group has been checked, and there are no more free desks close by, remove the checked desks from the freeDesks array
         else{
-            // remove indices from list of freeDesks
             for (j = connectedIndices.length; j >= 0; j--){
                 freeDesks.splice(connectedIndices[j],1);
             }
+            connectedIndices = [];
+            connectedIndices.push(0); 
         }   
     }
 
