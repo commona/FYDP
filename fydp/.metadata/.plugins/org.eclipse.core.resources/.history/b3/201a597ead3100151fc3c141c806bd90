@@ -54,7 +54,7 @@ public class RestApiDesks {
 		desks.add(new Desk(2,1));
 		desks.add(new Desk(3,2));
 		desks.add(new Desk(4,2));
-		desks.add(new Desk(5,2));
+		desks.add(new Desk(5,1));
 		desks.add(new Desk(6,0));
 		return desks;
 		

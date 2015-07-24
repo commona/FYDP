@@ -802,3 +802,19 @@ org.eclipse.core.runtime.CoreException: Could not resolve artifact com.microsoft
 2015-07-23 20:46:31,550 [Worker-390] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
 2015-07-23 20:46:31,558 [Worker-390] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
 2015-07-23 20:46:31,566 [Worker-390] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\Bijaya\Documents\GitHub\Seat-Spotter\fydp\seatspotter\src\test\resources
+2015-07-23 22:39:46,494 [Worker-415] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:39:46,494 [Worker-415] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-07-23 22:39:46,494 [Worker-415] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:39:46,494 [Worker-415] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\Bijaya\Documents\GitHub\Seat-Spotter\fydp\seatspotter\src\test\resources
+2015-07-23 22:40:09,352 [Worker-417] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:40:09,367 [Worker-417] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-07-23 22:40:09,367 [Worker-417] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:40:09,367 [Worker-417] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\Bijaya\Documents\GitHub\Seat-Spotter\fydp\seatspotter\src\test\resources
+2015-07-23 22:41:29,684 [Worker-416] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:41:29,684 [Worker-416] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-07-23 22:41:29,684 [Worker-416] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:41:29,684 [Worker-416] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\Bijaya\Documents\GitHub\Seat-Spotter\fydp\seatspotter\src\test\resources
+2015-07-23 22:41:32,489 [Worker-394] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:41:32,489 [Worker-394] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-07-23 22:41:32,489 [Worker-394] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-07-23 22:41:32,489 [Worker-394] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\Bijaya\Documents\GitHub\Seat-Spotter\fydp\seatspotter\src\test\resources

@@ -44,19 +44,15 @@ public class RestApiDesks {
 		return desks;
 	}
 	
-	@Path("/staticdesks")
+	@Path("/statichubs")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Desk> getStaticFloors(){
+	public List<DeskHub> getStaticFloors(){
 		
-		List<Desk> desks = new ArrayList<Desk>();
-		desks.add(new Desk(1,0));
-		desks.add(new Desk(2,1));
-		desks.add(new Desk(3,2));
-		desks.add(new Desk(4,2));
-		desks.add(new Desk(5,2));
-		desks.add(new Desk(6,0));
-		return desks;
+		List<DeskHub> deskHubs = new ArrayList<DeskHub>();
+		deskHubs.add(new DeskHub(1,"DC-HUB-A",1,1,1));
+		deskHubs.add(new DeskHub(2,"DC-HUB-B",1,1,1));
+		return deskHubs;
 		
 	}
 	

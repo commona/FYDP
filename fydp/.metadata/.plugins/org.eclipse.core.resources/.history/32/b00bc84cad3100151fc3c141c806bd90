@@ -14,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 import com.fydp.webservices.seatspotter.database.DBConstants;
 import com.fydp.webservices.seatspotter.database.DBManager;
 import com.fydp.webservices.seatspotter.database.model.Desk;
-import com.fydp.webservices.seatspotter.database.model.DeskHub;
 
 @Path("/libraries/{libraryId}/floors/{floorId}/deskhubs/{deskHubId}/desks")
 public class RestApiDesks {
@@ -42,22 +41,6 @@ public class RestApiDesks {
 		}
 		
 		return desks;
-	}
-	
-	@Path("/staticdesks")
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<Desk> getStaticFloors(){
-		
-		List<Desk> desks = new ArrayList<Desk>();
-		desks.add(new Desk(1,0));
-		desks.add(new Desk(2,1));
-		desks.add(new Desk(3,2));
-		desks.add(new Desk(4,2));
-		desks.add(new Desk(5,2));
-		desks.add(new Desk(6,0));
-		return desks;
-		
 	}
 	
 }
