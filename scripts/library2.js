@@ -2,6 +2,8 @@
 // http://stackoverflow.com/questions/1830927/how-do-i-make-a-link-that-goes-no-where
 
 // TODO:
+// consider case where no desks are found
+// read data from JSON file instead of directly from variable
 // implement code to find groups of empty desks
 // implement DC library
 // compress PNG files to decrease load time
@@ -24,7 +26,7 @@
 var seatStatus = [
     {
         "id" : 100,
-        "status" : 0
+        "status" : 2
     },
     {
         "id" : 101,
@@ -112,13 +114,14 @@ Floor.prototype.updateDisplay = function(){
                 default:
                     ctx.fillStyle = "red";
             }
-
+            
             ctx.beginPath();
             ctx.arc(this.desks[i].x, this.desks[i].y, this.desks[i].size, 0, 2*Math.PI);
             ctx.fill();
             
             // outline the circle
-            ctx.fillStyle = 'black';
+            ctx.strokeStyle = "black";
+            ctx.lineWidth=1;
             ctx.stroke();
         }
 
@@ -278,16 +281,9 @@ Library.prototype.getFloorIndex = function(floorName){
 
 Floor.prototype.calcMinDistances = function(){
     
-    console.log(this);
-    
-    var locations = [];
-    var i;
-    for(i = 0; i < this.desks.length; i++){
-        locations.push([this.desks[i].x, this.desks[i].y]);
-    }
-    console.log(locations);
-    
+    // Calculate the distance from each point to its nearest point
     var minDistances = [];
+    var i;
     var j;
     for(i = 0; i < this.desks.length; i++){
         var distances = [];
@@ -297,11 +293,13 @@ Floor.prototype.calcMinDistances = function(){
             }
         }
         minDistances.push(Math.min.apply(Math, distances));     // get the distance from this desk to the next closest desk
-        console.log("distances of index " + i);
-        console.log(distances);
+        //console.log("distances of index " + i);
+        //console.log(distances);
     }
     
-    console.log(minDistances);
+    //console.log(minDistances);
+    
+    // Get the median distance of the space between desks
     minDistances.sort();
     var median;
     if (minDistances.length % 2 == 0)
@@ -309,6 +307,98 @@ Floor.prototype.calcMinDistances = function(){
     else
         median = minDistances[minDistances.length/2 - 0.5];
     console.log("median: " + median);
+    
+    // calculate the upper bound and lower bound
+    var upperBound = median * 1.25;
+    var lowerBound = median * 0.75;
+    
+    // Duplicate the desks array
+    var freeDesks = this.desks.slice();
+    
+    // remove desks that are occupied/have something on the desk
+    for (i = freeDesks.length-1; i >= 0; i--){
+        if (freeDesks[i].status != 2)
+            freeDesks.splice(i,1);
+    }
+    console.log(freeDesks);
+    
+    // go through the new desk array and try to find available desks that are within the median distance, taking out those are aren't within a group
+    var numFree = 2;
+    var foundFlag = false;
+    while (freeDesks.length > 0){
+        var connectedIndices = [];
+        connectedIndices.push(0);
+        for (i = 1; i < freeDesks.length; i++){
+            var distance = Math.sqrt( Math.pow(freeDesks[i].x - freeDesks[0].x, 2) + Math.pow(freeDesks[i].y - freeDesks[0].y, 2));
+            if ( distance <= upperBound && distance >= lowerBound )
+                connectedIndices.push(i);
+            if (connectedIndices.length == numFree)
+                break;
+        }
+        if (connectedIndices.length == numFree){
+            console.log(connectedIndices)
+            foundFlag = true;
+            break;
+        }
+        else{
+            // remove indices from list of freeDesks
+            for (j = connectedIndices.length; j >= 0; j--){
+                freeDesks.splice(connectedIndices[j],1);
+            }
+        }   
+    }
+
+    // if a suitable set of desks has not been found, exit function
+    if (foundFlag == false)
+        return;
+
+    // create a new desk array with just the group of free desks
+    var deskGroup = [];
+    for (i = 0; i < connectedIndices.length; i++){
+        deskGroup.push(freeDesks[connectedIndices[i]]);
+    }
+    
+    // calculate the top-left corner and bottom-right corner of the box
+    var topLeft = [deskGroup[0].x - deskGroup[0].size, deskGroup[0].y - deskGroup[0].size];
+    var bottomRight = [deskGroup[0].x + deskGroup[0].size, deskGroup[0].y + deskGroup[0].size];
+    for (i = 1; i < deskGroup.length; i++){
+        if (topLeft[0] > deskGroup[i].x - deskGroup[i].size)
+            topLeft[0] = deskGroup[i].x - deskGroup[i].size;
+        if (topLeft[1] > deskGroup[i].y - deskGroup[i].size)
+            topLeft[1] = deskGroup[i].y - deskGroup[i].size;
+        if (bottomRight[0] < deskGroup[i].x + deskGroup[i].size)
+            bottomRight[0] = deskGroup[i].x + deskGroup[i].size;
+        if (bottomRight[1] < deskGroup[i].y + deskGroup[i].size)
+            bottomRight[1] = deskGroup[i].y + deskGroup[i].size;
+    }
+    var width = bottomRight[0] - topLeft[0];
+    var height = bottomRight[1] - topLeft[1];
+    console.log(topLeft);
+    console.log(bottomRight);
+    
+    // draw blue rectangle around the desks
+    var canvas = document.getElementById('canvas');
+    
+    if (canvas.getContext){
+        var ctx = canvas.getContext('2d');
+        
+        // clear the canvas
+        //ctx.clearRect(0,0,canvas.width,canvas.height);
+        
+        // Draw rectangle
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth=3;
+        ctx.strokeRect(topLeft[0], topLeft[1], width, height);
+
+    }
+    
+    // PSEUDOCODE
+    // Duplicate the desks array
+    // Remove desks that are occupied/have something on the desk
+    // Go through the new desk array and try to find available desks that are within the median distance
+        // remove desks that don't have enough nearby available desks
+    // if a set of desks has been found, draw a blue box around the desks
+        // get the uppper left corner and the lower right corner
 }
 
 // start the application
