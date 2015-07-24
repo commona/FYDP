@@ -1,0 +1,6 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+@XmlRootElement
+public class Desk {
+
+}

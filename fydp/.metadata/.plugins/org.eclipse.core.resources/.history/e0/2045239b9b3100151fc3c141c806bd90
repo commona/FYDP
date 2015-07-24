@@ -1,0 +1,11 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Desk {
+	
+	private int DeskId;
+	private int DeskState;
+
+}

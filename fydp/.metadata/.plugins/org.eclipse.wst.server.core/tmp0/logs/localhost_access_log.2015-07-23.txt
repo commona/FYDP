@@ -82,3 +82,12 @@
 127.0.0.1 - - [23/Jul/2015:19:59:56 -0400] "GET / HTTP/1.1" 404 994
 0:0:0:0:0:0:0:1 - - [23/Jul/2015:20:00:01 -0400] "GET /seatspotter/webapi/libraries/1/floors/2/deskhubs HTTP/1.1" 200 179
 0:0:0:0:0:0:0:1 - - [23/Jul/2015:20:00:40 -0400] "GET /seatspotter/webapi/libraries/2/floors/2/deskhubs HTTP/1.1" 200 179
+127.0.0.1 - - [23/Jul/2015:22:08:58 -0400] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:05 -0400] "GET /seatspotter HTTP/1.1" 302 -
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:05 -0400] "GET /seatspotter/ HTTP/1.1" 304 -
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:05 -0400] "GET /seatspotter/styles/style.css HTTP/1.1" 304 -
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:05 -0400] "GET /seatspotter/scripts/homepage.js HTTP/1.1" 404 1056
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:11 -0400] "GET /seatspotter/webapi/libraries HTTP/1.1" 200 306
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:16 -0400] "GET /seatspotter/webapi/libraries/1/floors HTTP/1.1" 200 165
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:24 -0400] "GET /seatspotter/webapi/libraries/1/floors/2/deskhubs HTTP/1.1" 200 179
+0:0:0:0:0:0:0:1 - - [23/Jul/2015:22:09:32 -0400] "GET /seatspotter/webapi/libraries/1/floors/2/deskhubs/1/desks HTTP/1.1" 200 163

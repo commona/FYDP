@@ -158,3 +158,6 @@ Java Model Exception: Java Model Status [EmptyDesks [in Library [in [Working cop
 
 !ENTRY org.eclipse.equinox.security 1 0 2015-07-23 19:12:17.222
 !MESSAGE New keyring password generated. 
+
+!ENTRY org.eclipse.m2e.logback.appender 4 0 2015-07-23 20:37:50.773
+!MESSAGE Could not download sources for com.microsoft.sqlserver:sqljdbc42:4.2
