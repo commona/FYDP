@@ -1,0 +1,22 @@
+package com.fydp.webservices.seatspotter.services;
+
+import java.util.List;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import com.fydp.webservices.seatspotter.database.model.DeskHub;
+
+@Path("/libraries/{libraryId}/floors/{floorId}")
+public class RestApiDeskHubs {
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<DeskHub> getDeskHubs(@PathParam("floorId") int floorId){
+		return null;
+	}
+
+}

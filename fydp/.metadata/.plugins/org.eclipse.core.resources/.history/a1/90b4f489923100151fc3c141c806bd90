@@ -1,0 +1,6 @@
+package com.fydp.webservices.seatspotter.services;
+
+@Path("/libraries/{libraryId}/floors/{floorId}")
+public class RestApiDeskHubs {
+
+}

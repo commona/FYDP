@@ -12,5 +12,6 @@ public class DBConstants {
 	// Store Procedure mapping
 	public static String GET_FLOORS = "ap_LibraryFloorList(?)";
 	public static String GET_LIBRARIES = "ap_LibraryList";
+	public static String GET_DESKHUBS = "ap_DeskHubList(?)";
 
 }

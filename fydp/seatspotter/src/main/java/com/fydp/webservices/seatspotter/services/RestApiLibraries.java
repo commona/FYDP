@@ -11,7 +11,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.fydp.webservices.seatspotter.database.DBConnection;
 import com.fydp.webservices.seatspotter.database.DBConstants;
 import com.fydp.webservices.seatspotter.database.DBManager;
 import com.fydp.webservices.seatspotter.database.model.Library;
@@ -21,7 +20,7 @@ public class RestApiLibraries {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Library> getStoredLibraries(){
+	public List<Library> getLibraries(){
 		
 		ResultSet result;
 		List<Library> libraries = new ArrayList<Library>();
@@ -46,6 +45,17 @@ public class RestApiLibraries {
 		
 		// return Response.ok().entity(libraries).build();
 		
+	}
+	
+	@Path("/staticLibraries")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Library> getStaticLibraries(){
+		
+		List<Library> libraries = new ArrayList<Library>();
+		libraries.add(new Library(1,"DC Library",1,1,1));
+		libraries.add(new Library(2,"DP Library",1,1,1));
+		return libraries;
 	}
 	
 }

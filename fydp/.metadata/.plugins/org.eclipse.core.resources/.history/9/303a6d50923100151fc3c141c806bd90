@@ -1,0 +1,5 @@
+package com.fydp.webservices.seatspotter.services;
+
+public class RestApiDeskHubs {
+
+}
