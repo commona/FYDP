@@ -1,0 +1,17 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+import javax.xml.bind.annotation.XmlElement;
+
+@XmlRootElement
+public class LibraryWithDesk extends Library{
+	
+	@XmlElement
+	private int totalDesks;
+	
+	@XmlElement
+	private int emptyDesks;
+	
+	@XmlElement
+	private int unknownState;
+
+}

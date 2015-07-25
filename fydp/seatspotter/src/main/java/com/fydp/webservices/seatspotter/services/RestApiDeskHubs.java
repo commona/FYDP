@@ -13,16 +13,16 @@ import javax.ws.rs.core.MediaType;
 import com.fydp.webservices.seatspotter.database.DBConstants;
 import com.fydp.webservices.seatspotter.database.DBManager;
 import com.fydp.webservices.seatspotter.database.model.DeskHub;
-import com.fydp.webservices.seatspotter.database.model.Floor;
+import com.fydp.webservices.seatspotter.database.model.DeskHubWithDesk;
 
 @Path("/libraries/{libraryId}/floors/{floorId}/deskhubs")
 public class RestApiDeskHubs {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<DeskHub> getDeskHubs(@PathParam("floorId") int floorId){
+	public List<DeskHubWithDesk> getDeskHubs(@PathParam("floorId") int floorId){
 		ResultSet result;
-		List<DeskHub> deskHubs = new ArrayList<DeskHub>();
+		List<DeskHubWithDesk> deskHubs = new ArrayList<DeskHubWithDesk>();
 		
 		// setup params for stored procedure
 		List<Integer> params = new ArrayList<Integer>();
@@ -38,7 +38,7 @@ public class RestApiDeskHubs {
 				int emptyDesks = result.getInt("EmptyDesks");
 				int unknownState = result.getInt("UnknownState");
 				
-				deskHubs.add(new DeskHub(deskHubId,deskHubLabel,totalDesks,emptyDesks,unknownState));
+				deskHubs.add(new DeskHubWithDesk(deskHubId,deskHubLabel,totalDesks,emptyDesks,unknownState));
 			}
 		} catch (Exception e){
 			e.printStackTrace();
@@ -50,11 +50,11 @@ public class RestApiDeskHubs {
 	@Path("/statichubs")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<DeskHub> getStaticFloors(){
+	public List<DeskHubWithDesk> getStaticFloors(){
 		
-		List<DeskHub> deskHubs = new ArrayList<DeskHub>();
-		deskHubs.add(new DeskHub(1,"DC-HUB-A",1,1,1));
-		deskHubs.add(new DeskHub(2,"DC-HUB-B",1,1,1));
+		List<DeskHubWithDesk> deskHubs = new ArrayList<DeskHubWithDesk>();
+		deskHubs.add(new DeskHubWithDesk(1,"DC-HUB-A",1,1,1));
+		deskHubs.add(new DeskHubWithDesk(2,"DC-HUB-B",1,1,1));
 		return deskHubs;
 		
 	}

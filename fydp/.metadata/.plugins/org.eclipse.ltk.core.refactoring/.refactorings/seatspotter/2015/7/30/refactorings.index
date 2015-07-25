@@ -5,3 +5,5 @@
 1437694863368	Delete element
 1437698604586	Rename field 'DeskId'
 1437698637311	Rename field 'DeskState'
+1437857390856	Rename resource 'DeskHub.java'
+1437857454854	Rename resource 'DeskHubWithDesks.java'

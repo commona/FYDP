@@ -1,0 +1,5 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+public class LibraryWithDesk {
+
+}

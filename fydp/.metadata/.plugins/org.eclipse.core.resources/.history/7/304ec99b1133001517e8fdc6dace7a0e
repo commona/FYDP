@@ -1,0 +1,38 @@
+package com.fydp.webservices.seatspotter.database.model;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Library {
+	
+	@XmlElement
+	private int LibraryId;
+	
+	@XmlElement
+	private String LibraryName;
+	
+	public Library(){}
+	
+	public Library(int LibraryId, String LibraryName) {
+		this.LibraryId = LibraryId;
+		this.LibraryName = LibraryName;
+	}
+
+	public int getLibraryId() {
+		return LibraryId;
+	}
+
+	public void setLibraryId(int LibraryId) {
+		this.LibraryId = LibraryId;
+	}
+
+	public String getLibraryName() {
+		return LibraryName;
+	}
+
+	public void setLibraryName(String LibraryName) {
+		this.LibraryName = LibraryName;
+	}
+	
+}

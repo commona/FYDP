@@ -14,16 +14,17 @@ import javax.ws.rs.core.Response;
 import com.fydp.webservices.seatspotter.database.DBConstants;
 import com.fydp.webservices.seatspotter.database.DBManager;
 import com.fydp.webservices.seatspotter.database.model.Library;
+import com.fydp.webservices.seatspotter.database.model.LibraryWithDesk;
 
 @Path("/libraries")
 public class RestApiLibraries {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Library> getLibraries(){
+	public List<LibraryWithDesk> getLibrariesWithDesks(){
 		
 		ResultSet result;
-		List<Library> libraries = new ArrayList<Library>();
+		List<LibraryWithDesk> libraries = new ArrayList<LibraryWithDesk>();
 		
 		result = DBManager.executeProcedureWithNoParam(DBConstants.GET_LIBRARIES);
 		
@@ -35,7 +36,7 @@ public class RestApiLibraries {
 				int emptyDesks = result.getInt("EmptyDesks");
 				int unknownState = result.getInt("UnknownState");
 				
-				libraries.add(new Library(libraryId, libraryName, totalDesks, emptyDesks, unknownState));
+				libraries.add(new LibraryWithDesk(libraryId, libraryName, totalDesks, emptyDesks, unknownState));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -50,11 +51,11 @@ public class RestApiLibraries {
 	@Path("/staticLibraries")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Library> getStaticLibraries(){
+	public List<LibraryWithDesk> getStaticLibraries(){
 		
-		List<Library> libraries = new ArrayList<Library>();
-		libraries.add(new Library(1,"DC Library",1,1,1));
-		libraries.add(new Library(2,"DP Library",1,1,1));
+		List<LibraryWithDesk> libraries = new ArrayList<LibraryWithDesk>();
+		libraries.add(new LibraryWithDesk(1,"DC Library",1,1,1));
+		libraries.add(new LibraryWithDesk(2,"DP Library",1,1,1));
 		return libraries;
 	}
 	

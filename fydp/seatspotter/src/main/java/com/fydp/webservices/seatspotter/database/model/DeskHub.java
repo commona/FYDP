@@ -6,20 +6,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DeskHub {
 	
 	private int deskHubId;
+	private int floorId;
 	private String deskHubLabel;
-	private int totalDesks;
-	private int emptyDesks;
-	private int unknownState;
 	
 	public DeskHub(){}
 	
-	public DeskHub(int deskHubId, String deskHubLabel, int totalDesks,
-			int emptyDesks, int unknownState) {
+	public DeskHub(int deskHubId, int floorId, String deskHubLabel) {
 		this.deskHubId = deskHubId;
+		this.floorId = floorId;
 		this.deskHubLabel = deskHubLabel;
-		this.totalDesks = totalDesks;
-		this.emptyDesks = emptyDesks;
-		this.unknownState = unknownState;
 	}
 
 	public int getDeskHubId() {
@@ -30,6 +25,14 @@ public class DeskHub {
 		this.deskHubId = deskHubId;
 	}
 
+	public int getFloorId() {
+		return floorId;
+	}
+
+	public void setFloorId(int floorId) {
+		this.floorId = floorId;
+	}
+
 	public String getDeskHubLabel() {
 		return deskHubLabel;
 	}
@@ -38,35 +41,10 @@ public class DeskHub {
 		this.deskHubLabel = deskHubLabel;
 	}
 
-	public int getTotalDesks() {
-		return totalDesks;
-	}
-
-	public void setTotalDesks(int totalDesks) {
-		this.totalDesks = totalDesks;
-	}
-
-	public int getEmptyDesks() {
-		return emptyDesks;
-	}
-
-	public void setEmptyDesks(int emptyDesks) {
-		this.emptyDesks = emptyDesks;
-	}
-
-	public int getUnknownState() {
-		return unknownState;
-	}
-
-	public void setUnknownState(int unknownState) {
-		this.unknownState = unknownState;
-	}
-
 	@Override
 	public String toString() {
-		return "DeskHub [deskHubId=" + deskHubId + ", deskHubLabel="
-				+ deskHubLabel + ", totalDesks=" + totalDesks + ", emptyDesks="
-				+ emptyDesks + ", unknownState=" + unknownState + "]";
+		return "DeskHub [deskHubId=" + deskHubId + ", floorId=" + floorId
+				+ ", deskHubLabel=" + deskHubLabel + "]";
 	}
-
+	
 }
