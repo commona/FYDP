@@ -291,7 +291,7 @@ Library.prototype.getFloorIndex = function(floorName){
         return -1;
 }
 
-Floor.prototype.calcMinDistances = function(){
+Floor.prototype.getFreeGroup = function(numFree){
     
     // Calculate the distance from each point to its nearest point
     var minDistances = [];
@@ -301,6 +301,7 @@ Floor.prototype.calcMinDistances = function(){
         var distances = [];
         for (j = 0; j < this.desks.length; j++){
             if (j != i){
+                // calculate distance between seats
                 distances.push( Math.sqrt( Math.pow(this.desks[i].x - this.desks[j].x, 2) + Math.pow(this.desks[i].y - this.desks[j].y, 2) ));
             }
         }
@@ -335,14 +336,43 @@ Floor.prototype.calcMinDistances = function(){
     //console.log(freeDesks);
     
     // go through the new desk array and try to find available desks that are within the median distance, taking out those are aren't within a group
-    var numFree = 3;
     var foundFlag = false;
-    var checkingIndex = 0;      // keeps track of the desk currently being checked
+    var checkingIndex = 0;      // keeps track of the desk currently being checked around for other empty seats
     var connectedIndices = [];  // keeps track of the group of free desks found
     connectedIndices.push(0);   // check the first index
+    
+    var deskGroup = [];         // array to hold currently examined group of desks
+    while (freeDesks.length > 0){
+        deskGroup = [];
+        deskGroup.push( freeDesks.splice(0,1)[0] );
+        for (i = 0; i < deskGroup.length; i++){
+            for (j = freeDesks.length-1; j >= 0; j--){
+                var distance = Math.sqrt( Math.pow(deskGroup[i].x - freeDesks[j].x, 2) + Math.pow(deskGroup[i].y - freeDesks[j].y, 2) );
+                if (distance <= upperBound && distance >= lowerBound)
+                    deskGroup.push( freeDesks.splice(j,1)[0] );
+                if (deskGroup.length >= numFree){
+                    foundFlag = true;
+                    break;
+                }
+            }
+            if (foundFlag == true)
+                break;
+        }
+        if (foundFlag == true)
+            break;
+        //deskGroup = [];     // this group of desks does not have enough desks, so clear it
+    }
+    console.log("desk group:");
+    console.log(deskGroup);
+    
+    /*
     while (freeDesks.length > 0){
         for (i = 1; i < freeDesks.length; i++){
+            console.log("checking index = " + checkingIndex);
+            console.log(freeDesks);
+            
             var distance = Math.sqrt( Math.pow(freeDesks[i].x - freeDesks[checkingIndex].x, 2) + Math.pow(freeDesks[i].y - freeDesks[checkingIndex].y, 2));
+
             if ( distance <= upperBound && distance >= lowerBound )
                 connectedIndices.push(i);
             if (connectedIndices.length == numFree)
@@ -371,16 +401,16 @@ Floor.prototype.calcMinDistances = function(){
             connectedIndices.push(0); 
         }   
     }
-
+*/
     // if a suitable set of desks has not been found, exit function
     if (foundFlag == false)
         return;
 
     // create a new desk array with just the group of free desks
-    var deskGroup = [];
-    for (i = 0; i < connectedIndices.length; i++){
-        deskGroup.push(freeDesks[connectedIndices[i]]);
-    }
+    // var deskGroup = [];
+    // for (i = 0; i < connectedIndices.length; i++){
+        // deskGroup.push(freeDesks[connectedIndices[i]]);
+    // }
     
     // calculate the top-left corner and bottom-right corner of the box
     var topLeft = [deskGroup[0].x - deskGroup[0].size, deskGroup[0].y - deskGroup[0].size];
@@ -428,16 +458,11 @@ Floor.prototype.calcMinDistances = function(){
 // start the application
 var library = new Library();
 
-
-
-
-
-
-
-
-
-
-
+// assign function to buttons
+document.getElementById("button2seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(2);};
+document.getElementById("button3seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(3);};
+document.getElementById("button4seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(4);};
+document.getElementById("button5seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(5);};
 
 
 // dummyfunction = function(){
