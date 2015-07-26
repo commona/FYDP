@@ -1,13 +1,9 @@
-// http://www.javascripter.net/faq/querystr.htm?test
-// http://stackoverflow.com/questions/1830927/how-do-i-make-a-link-that-goes-no-where
 
 // TODO:
-// consider case where no desks are found
+// make group box blink
 // read data from JSON file instead of directly from variable
 // implement code to find groups of empty desks
 // implement DC library
-// compress PNG files to decrease load time
-// create new methods to replace current implementation of callback functions
 // investigate possible failure points in script
 // check for invalid entries in data files
 // comment code
@@ -20,9 +16,10 @@
 // COMMON CONSOLE COMMANDS
 // library.floors[1].desks[0].status
 // clearInterval(intervalID)
+// statusObj.floors[0].desks[0].status = 0
 
 
-// provide static occupancy data until the server is built and running
+// provide static occupancy data until the server is running
 var seatStatus = [
     {
         "id" : 100,
@@ -70,6 +67,10 @@ var seatStatus = [
     },
 ]
 
+var intervalID;             // ID for the timer that redraws the seats
+const REDRAW_TIME = 5000;   // amount of time (in ms) for desk statuses to be refreshed
+var statusObj;              // holds the desks statuses read from the JSON file
+
 // Objects
 var Desk = function(id, x, y, size){
     this.id = id;
@@ -88,17 +89,42 @@ var Floor = function(name, mapName){
 Floor.prototype.updateDisplay = function(){
     
     // update seat statuses
-    var i;
+    // var i;
+    // for (i = 0; i < this.desks.length ; i++){
+        // var j = 0;
+        // while( j < seatStatus.length && this.desks[i].id != seatStatus[j].id ){
+            // j++
+        // }
+        // if ( j < seatStatus.length ){
+            // this.desks[i].status = seatStatus[j].status;
+        // }
+        // else{
+            // console.log( "seat data not found: " + this.desks[i].id );
+        // }
+    // }
+    
+    // get the floor index and desk array
+    var deskArray = [];
+    for (i = 0; i < statusObj.floors.length; i++){
+        if (statusObj.floors[i].name == this.name){
+            deskArray = statusObj.floors[i].desks.slice();
+            break;
+        }
+    }
+    if (deskArray.length == 0)
+        return;
+    
+    //console.log("desk array");
+    //console.log(deskArray);
+    
+     // update seat statuses with json object  
     for (i = 0; i < this.desks.length ; i++){
         var j = 0;
-        while( j < seatStatus.length && this.desks[i].id != seatStatus[j].id ){
-            j++
-        }
-        if ( j < seatStatus.length ){
-            this.desks[i].status = seatStatus[j].status;
-        }
-        else{
-            //console.log( "seat data not found: " + this.desks[i].id );
+        for (j = 0; j < deskArray.length; j++){
+            if (this.desks[i].id == deskArray[j].id){
+                this.desks[i].status = deskArray[j].status;
+                break;
+            }
         }
     }
     
@@ -140,9 +166,11 @@ Floor.prototype.updateDisplay = function(){
     }
     
     console.log("seat status and picture updated");
+    // clearInterval(intervalID);
+    // intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
 }
 
-var intervalID;
+
 Floor.prototype.updateMap = function(){
     console.log("starting updateMap()");
     // load floor map
@@ -156,14 +184,18 @@ Floor.prototype.updateMap = function(){
         canvas.setAttribute("height", img.height);
         canvas.style.backgroundImage = "url('../maps/" + library.floors[library.currentFloor].mapName + "')";
         console.log("map displayed");
-        
-        library.floors[library.currentFloor].updateDisplay();
+
+        // set timer to redraw the seats 
         clearInterval(intervalID);
-        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, 5000);
-        library.floors[library.currentFloor].updateDisplay()    // instantly redraw
+        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
+        
+        // redraw seats
+        library.floors[library.currentFloor].updateDisplay()
+        
         //var intervalID = window.setInterval(library.floors[library.currentFloor].updateDisplay(), 1000);        // remember to remove interval when switching floors
     }
 }
+
 
 // Library class
 var Library = function(){
@@ -176,14 +208,14 @@ var Library = function(){
     queryValue = queryValue.substring(1,queryValue.length);
     
     // Display the library name on the page
-    if (queryValue == "design-fair")
-        document.getElementById('libraryName').innerHTML = "Design Fair";
-    else if (queryValue == "dc-library")
-        document.getElementById('libraryName').innerHTML = "DC Library";
-    else if (queryValue == "dp-library")
-        document.getElementById('libraryName').innerHTML = "DP library";
-    else
-        return;
+    // if (queryValue == "design-fair")
+        // document.getElementById('libraryName').innerHTML = "Design Fair";
+    // else if (queryValue == "dc-library")
+        // document.getElementById('libraryName').innerHTML = "DC Library";
+    // else if (queryValue == "dp-library")
+        // document.getElementById('libraryName').innerHTML = "DP library";
+    // else
+        // return;
     
     // load data file
     var dataFile = new XMLHttpRequest();
@@ -237,6 +269,30 @@ var Library = function(){
         }
     }
     
+    // load initial seat statuses from static JSON file
+    var jsonFile = new XMLHttpRequest();
+    jsonFile.open('get','http://commona.github.io/Seat-Spotter/libraries/design-fair.json',true);
+    jsonFile.send();
+    jsonFile.onreadystatechange = function(){
+        if (jsonFile.readyState == 4){
+            var str = jsonFile.responseText;
+            console.log(str);
+            console.log("parsing string...");
+            statusObj = JSON.parse(str);
+            console.log("parsed object");
+            console.log(statusObj);
+        }
+    }
+    // web browser refuses to open local files, so open data file from Github when testing the site on a local computer
+    // if (self.location.origin == "http://commona.github.io")
+        // dataFile.open('get','../libraries/' + queryValue + '.csv',true);
+    // else
+        // dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '.csv',true);
+    
+    // dataFile.send();
+    
+    // dataFile.onreadystatechange = function(){
+        // if (dataFile.readyState == 4){
 }
 
 // Update the floor links, and disabling the link for the currently displayed floor
@@ -337,9 +393,6 @@ Floor.prototype.getFreeGroup = function(numFree){
     
     // go through the new desk array and try to find available desks that are within the median distance, taking out those are aren't within a group
     var foundFlag = false;
-    var checkingIndex = 0;      // keeps track of the desk currently being checked around for other empty seats
-    var connectedIndices = [];  // keeps track of the group of free desks found
-    connectedIndices.push(0);   // check the first index
     
     var deskGroup = [];         // array to hold currently examined group of desks
     while (freeDesks.length > 0){
@@ -360,57 +413,16 @@ Floor.prototype.getFreeGroup = function(numFree){
         }
         if (foundFlag == true)
             break;
-        //deskGroup = [];     // this group of desks does not have enough desks, so clear it
     }
     console.log("desk group:");
     console.log(deskGroup);
     
-    /*
-    while (freeDesks.length > 0){
-        for (i = 1; i < freeDesks.length; i++){
-            console.log("checking index = " + checkingIndex);
-            console.log(freeDesks);
-            
-            var distance = Math.sqrt( Math.pow(freeDesks[i].x - freeDesks[checkingIndex].x, 2) + Math.pow(freeDesks[i].y - freeDesks[checkingIndex].y, 2));
-
-            if ( distance <= upperBound && distance >= lowerBound )
-                connectedIndices.push(i);
-            if (connectedIndices.length == numFree)
-                break;
-        }
-        
-        console.log("connected indices");
-        console.log(connectedIndices);
-        
-        // check if enough adjacent free desks have been found
-        if (connectedIndices.length == numFree){
-            //console.log(connectedIndices)
-            foundFlag = true;
-            break;
-        }
-        // check other desks in group to see if there are more free desks close by
-        if (checkingIndex < connectedIndices.length - 1){
-            checkingIndex++;
-        }
-        // if every desk in the group has been checked, and there are no more free desks close by, remove the checked desks from the freeDesks array
-        else{
-            for (j = connectedIndices.length; j >= 0; j--){
-                freeDesks.splice(connectedIndices[j],1);
-            }
-            connectedIndices = [];
-            connectedIndices.push(0); 
-        }   
-    }
-*/
+    
     // if a suitable set of desks has not been found, exit function
-    if (foundFlag == false)
+    if (foundFlag == false){
+        this.updateDisplay();   // clear any previously displayed blue boxes
         return;
-
-    // create a new desk array with just the group of free desks
-    // var deskGroup = [];
-    // for (i = 0; i < connectedIndices.length; i++){
-        // deskGroup.push(freeDesks[connectedIndices[i]]);
-    // }
+    }
     
     // calculate the top-left corner and bottom-right corner of the box
     var topLeft = [deskGroup[0].x - deskGroup[0].size, deskGroup[0].y - deskGroup[0].size];
@@ -439,20 +451,22 @@ Floor.prototype.getFreeGroup = function(numFree){
         // clear the canvas
         //ctx.clearRect(0,0,canvas.width,canvas.height);
         
+        // update the display to remove previous boxed desk groups
+        console.log("floor:");
+        console.log(this);
+        this.updateDisplay();
+        
+        // set timer to update display
+        clearInterval(intervalID);
+        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
+
         // Draw rectangle
         ctx.strokeStyle = "blue";
         ctx.lineWidth=3;
         ctx.strokeRect(topLeft[0], topLeft[1], width, height);
 
     }
-    
-    // PSEUDOCODE
-    // Duplicate the desks array
-    // Remove desks that are occupied/have something on the desk
-    // Go through the new desk array and try to find available desks that are within the median distance
-        // remove desks that don't have enough nearby available desks
-    // if a set of desks has been found, draw a blue box around the desks
-        // get the uppper left corner and the lower right corner
+
 }
 
 // start the application
@@ -464,12 +478,31 @@ document.getElementById("button3seats").onclick = function(){library.floors[libr
 document.getElementById("button4seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(4);};
 document.getElementById("button5seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(5);};
 
-
-// dummyfunction = function(){
+// randomize seat statuses for the purpose of demonstrating locating groups of free desks
+document.getElementById("buttonRandom").onclick = function(){
+    // find index of floor in statusObj
+    var index = -1;
+    for (i = 0; i < statusObj.floors.length; i++){
+        if (statusObj.floors[i].name == library.floors[library.currentFloor].name){
+            index = i;
+            break;
+        }
+    }
+    if (index == -1)
+        return;
     
-// }
+    // randomize statuses
+    for (i = 0; i < statusObj.floors[index].desks.length; i++){
+        var randStatus = Math.floor(Math.random() * 3);
+        statusObj.floors[index].desks[i].status = randStatus;
+    }
+    
+    // update the display
+    library.floors[library.currentFloor].updateDisplay();
+    clearInterval(intervalID);
+    intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
+}
 
-// dummyfunction();
 
 // console.log('starting test....adsfas');
 // var dataFile = new XMLHttpRequest();
