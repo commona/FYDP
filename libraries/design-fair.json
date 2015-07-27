@@ -24,27 +24,6 @@
         "name": "2",
         "desks": [
             {
-                "id" : 200,
-                "status" : 1
-            },
-            {
-                "id" : 201,
-                "status" : 1
-            },
-            {
-                "id" : 202,
-                "status" : 1
-            },
-            {
-                "id" : 203,
-                "status" : 1
-            }
-        ]
-    },
-    {
-        "name": "3",
-        "desks": [
-            {
                 "id": 201,
                 "status": 1
               },
