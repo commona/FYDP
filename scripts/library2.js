@@ -263,26 +263,30 @@ var Library = function(){
             
             // list out available floors
             library.updateFloorLinks();
-
-            // paint picture of the first floor in the floors array and start drawing the seat statuses
-            library.floors[0].updateMap();
+            
+            var jsonFile = new XMLHttpRequest();
+            jsonFile.open('get','http://commona.github.io/Seat-Spotter/libraries/design-fair.json',true);
+            jsonFile.send();
+            jsonFile.onreadystatechange = function(){
+                if (jsonFile.readyState == 4){
+                    var str = jsonFile.responseText;
+                    //console.log(str);
+                    console.log("parsing string...");
+                    statusObj = JSON.parse(str);
+                    console.log("parsed object");
+                    console.log(statusObj);
+                    
+                    // paint picture of the first floor in the floors array and start drawing the seat statuses
+                    library.floors[0].updateMap();
+                }
+            }
+            
+            
         }
     }
     
     // load initial seat statuses from static JSON file
-    var jsonFile = new XMLHttpRequest();
-    jsonFile.open('get','http://commona.github.io/Seat-Spotter/libraries/design-fair.json',true);
-    jsonFile.send();
-    jsonFile.onreadystatechange = function(){
-        if (jsonFile.readyState == 4){
-            var str = jsonFile.responseText;
-            console.log(str);
-            console.log("parsing string...");
-            statusObj = JSON.parse(str);
-            console.log("parsed object");
-            console.log(statusObj);
-        }
-    }
+    
     // web browser refuses to open local files, so open data file from Github when testing the site on a local computer
     // if (self.location.origin == "http://commona.github.io")
         // dataFile.open('get','../libraries/' + queryValue + '.csv',true);
@@ -395,11 +399,15 @@ Floor.prototype.getFreeGroup = function(numFree){
     var foundFlag = false;
     
     var deskGroup = [];         // array to hold currently examined group of desks
+    var groupArray = [];        // array of groups of desks (because there may be multiple locations where x number of desks of free)
     while (freeDesks.length > 0){
+        foundFlag = false;
         deskGroup = [];
         deskGroup.push( freeDesks.splice(0,1)[0] );
+        // loop through all desks in the group
         for (i = 0; i < deskGroup.length; i++){
-            for (j = freeDesks.length-1; j >= 0; j--){
+            // finds desks closeby to the currently examined desk
+            for (j = freeDesks.length-1; j >= 0; j--){      // performance may worsen because working backwards
                 var distance = Math.sqrt( Math.pow(deskGroup[i].x - freeDesks[j].x, 2) + Math.pow(deskGroup[i].y - freeDesks[j].y, 2) );
                 if (distance <= upperBound && distance >= lowerBound)
                     deskGroup.push( freeDesks.splice(j,1)[0] );
@@ -411,15 +419,17 @@ Floor.prototype.getFreeGroup = function(numFree){
             if (foundFlag == true)
                 break;
         }
-        if (foundFlag == true)
-            break;
+        if (foundFlag == true){
+            groupArray.push(deskGroup.slice());
+            //break;
+        }
     }
-    console.log("desk group:");
-    console.log(deskGroup);
+    console.log("group array:");
+    console.log(groupArray);
     
     
     // if a suitable set of desks has not been found, exit function
-    if (foundFlag == false){
+    if (groupArray.length == 0){
         this.updateDisplay();   // clear any previously displayed blue boxes
         return;
     }
@@ -448,23 +458,34 @@ Floor.prototype.getFreeGroup = function(numFree){
     if (canvas.getContext){
         var ctx = canvas.getContext('2d');
         
-        // clear the canvas
-        //ctx.clearRect(0,0,canvas.width,canvas.height);
-        
         // update the display to remove previous boxed desk groups
-        console.log("floor:");
-        console.log(this);
         this.updateDisplay();
-        
-        // set timer to update display
         clearInterval(intervalID);
         intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
+        
+        for (i = 0; i < groupArray.length; i++){
 
-        // Draw rectangle
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth=3;
-        ctx.strokeRect(topLeft[0], topLeft[1], width, height);
-
+            var topLeft = [groupArray[i][0].x - groupArray[i][0].size, groupArray[i][0].y - groupArray[i][0].size];
+            var bottomRight = [groupArray[i][0].x + groupArray[i][0].size, groupArray[i][0].y + groupArray[i][0].size];
+            for (j = 1; j < groupArray[i].length; j++){
+                if (topLeft[0] > groupArray[i][j].x - groupArray[i][j].size)
+                    topLeft[0] = groupArray[i][j].x - groupArray[i][j].size;
+                if (topLeft[1] > groupArray[i][j].y - groupArray[i][j].size)
+                    topLeft[1] = groupArray[i][j].y - groupArray[i][j].size;
+                if (bottomRight[0] < groupArray[i][j].x + groupArray[i][j].size)
+                    bottomRight[0] = groupArray[i][j].x + groupArray[i][j].size;
+                if (bottomRight[1] < groupArray[i][j].y + groupArray[i][j].size)
+                    bottomRight[1] = groupArray[i][j].y + groupArray[i][j].size;
+            }
+            
+            var width = bottomRight[0] - topLeft[0];
+            var height = bottomRight[1] - topLeft[1];
+            
+            // Draw rectangle
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth=3;
+            ctx.strokeRect(topLeft[0], topLeft[1], width, height);
+        }
     }
 
 }
@@ -493,7 +514,9 @@ document.getElementById("buttonRandom").onclick = function(){
     
     // randomize statuses
     for (i = 0; i < statusObj.floors[index].desks.length; i++){
-        var randStatus = Math.floor(Math.random() * 3);
+        // var randStatus = Math.floor(Math.random() * 3);
+        var randStatus = Math.floor(Math.random() * 4);
+        if (randStatus == 3) randStatus = 2;
         statusObj.floors[index].desks[i].status = randStatus;
     }
     
