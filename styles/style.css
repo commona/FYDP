@@ -1,5 +1,5 @@
 html{
-    overflow-y: scroll; /* keeps the vertical scroll bar visible */
+    /*overflow-y: scroll;*/ /* keeps the vertical scroll bar visible */
 }
 
 body{

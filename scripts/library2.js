@@ -1,8 +1,7 @@
 
 // TODO:
+// put number of free tables beside floor numbers
 // make group box blink
-// read data from JSON file instead of directly from variable
-// implement code to find groups of empty desks
 // implement DC library
 // investigate possible failure points in script
 // check for invalid entries in data files
