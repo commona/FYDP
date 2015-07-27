@@ -10,6 +10,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.fydp.webservices.seatspotter.database.DBConstants;
 import com.fydp.webservices.seatspotter.database.DBManager;
@@ -42,6 +44,29 @@ public class RestApiDesks {
 		}
 		
 		return desks;
+	}
+	
+	@GET
+	@Path("/{deskId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getDesk(@PathParam("deskId") int deskId){
+		
+		ResultSet result;
+		List<Integer> params = new ArrayList<Integer>();
+		params.add(deskId);
+		
+		result=DBManager.executeProcedureWithParam(DBConstants.GET_DESKSBYID, params);
+		
+		try {
+			result.next();
+			int dId = result.getInt("DeskId");
+			int deskHubId = result.getInt("DeskHubId");
+			int deskState = result.getInt("DeskState");
+			Desk desk = new Desk(dId, deskHubId, deskState);
+			return Response.ok().entity(desk).build();
+		} catch (SQLException e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	@Path("/staticdesks")

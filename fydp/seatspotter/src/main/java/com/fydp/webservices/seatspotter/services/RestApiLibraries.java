@@ -7,9 +7,11 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.fydp.webservices.seatspotter.database.DBConstants;
 import com.fydp.webservices.seatspotter.database.DBManager;
@@ -47,6 +49,33 @@ public class RestApiLibraries {
 		// return Response.ok().entity(libraries).build();
 		
 	}
+	
+	@GET
+	@Path("/{libraryId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getLibrary(@PathParam("libraryId") int libraryId){
+		
+		ResultSet result;
+		List<Integer> params = new ArrayList<Integer>();
+		params.add(libraryId);
+		
+		result = DBManager.executeProcedureWithParam(DBConstants.GET_LIBRARYBYID, params);
+		try {
+				result.next();
+				int libId = result.getInt("LibraryId");
+				String libraryName = result.getString("LibraryName");
+				Library lib = new Library(libId, libraryName);
+				return Response.ok().entity(lib).build();
+		} catch (SQLException e){
+			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+	
+	//public Response insertLibrary(){
+		
+		
+		//return Response.ok().build();		
+	//}
 	
 	@Path("/staticLibraries")
 	@GET
