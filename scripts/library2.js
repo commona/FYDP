@@ -87,21 +87,6 @@ var Floor = function(name, mapName){
 
 Floor.prototype.updateDisplay = function(){
     
-    // update seat statuses
-    // var i;
-    // for (i = 0; i < this.desks.length ; i++){
-        // var j = 0;
-        // while( j < seatStatus.length && this.desks[i].id != seatStatus[j].id ){
-            // j++
-        // }
-        // if ( j < seatStatus.length ){
-            // this.desks[i].status = seatStatus[j].status;
-        // }
-        // else{
-            // console.log( "seat data not found: " + this.desks[i].id );
-        // }
-    // }
-    
     // get the floor index and desk array
     var deskArray = [];
     for (i = 0; i < statusObj.floors.length; i++){
@@ -112,9 +97,6 @@ Floor.prototype.updateDisplay = function(){
     }
     if (deskArray.length == 0)
         return;
-    
-    //console.log("desk array");
-    //console.log(deskArray);
     
      // update seat statuses with json object  
     for (i = 0; i < this.desks.length ; i++){
@@ -206,16 +188,6 @@ var Library = function(){
     var queryValue = self.location.search;
     queryValue = queryValue.substring(1,queryValue.length);
     
-    // Display the library name on the page
-    // if (queryValue == "design-fair")
-        // document.getElementById('libraryName').innerHTML = "Design Fair";
-    // else if (queryValue == "dc-library")
-        // document.getElementById('libraryName').innerHTML = "DC Library";
-    // else if (queryValue == "dp-library")
-        // document.getElementById('libraryName').innerHTML = "DP library";
-    // else
-        // return;
-    
     // load data file
     var dataFile = new XMLHttpRequest();
     
@@ -283,19 +255,6 @@ var Library = function(){
             
         }
     }
-    
-    // load initial seat statuses from static JSON file
-    
-    // web browser refuses to open local files, so open data file from Github when testing the site on a local computer
-    // if (self.location.origin == "http://commona.github.io")
-        // dataFile.open('get','../libraries/' + queryValue + '.csv',true);
-    // else
-        // dataFile.open('get','http://commona.github.io/Seat-Spotter/libraries/' + queryValue + '.csv',true);
-    
-    // dataFile.send();
-    
-    // dataFile.onreadystatechange = function(){
-        // if (dataFile.readyState == 4){
 }
 
 // Update the floor links, and disabling the link for the currently displayed floor
@@ -365,8 +324,6 @@ Floor.prototype.getFreeGroup = function(numFree){
             }
         }
         minDistances.push(Math.min.apply(Math, distances));     // get the distance from this desk to the next closest desk
-        //console.log("distances of index " + i);
-        //console.log(distances);
     }
     
     //console.log(minDistances);
@@ -378,7 +335,6 @@ Floor.prototype.getFreeGroup = function(numFree){
         median = (minDistances[minDistances.length/2 - 1] + minDistances[minDistances.length/2 - 1])/2
     else
         median = minDistances[minDistances.length/2 - 0.5];
-    //console.log("median: " + median);
     
     // calculate the upper bound and lower bound
     var upperBound = median * 1.25;
@@ -525,6 +481,22 @@ document.getElementById("buttonRandom").onclick = function(){
     intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
 }
 
+
+function TestTime(){
+	var t0 = performance.now();
+	library.floors[library.currentFloor].updateDisplay();
+	var t1 = performance.now();
+	console.log("Runtime: " + (t1 - t0) + " milliseconds");
+}
+
+// function TestTime(){
+	// var t0 = performance.now();
+	// for (i = 0; i < 5; i++){
+		// library.floors[library.currentFloor].updateDisplay();
+	// }
+	// var t1 = performance.now();
+	// console.log("Runtime: " + (t1 - t0) + " milliseconds");
+// }
 
 // console.log('starting test....adsfas');
 // var dataFile = new XMLHttpRequest();
