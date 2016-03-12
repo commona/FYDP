@@ -72,59 +72,104 @@ var statusObj;              // holds the desks statuses read from the JSON file
 var canvasW, canvasH;
 
 // Objects
-var Desk = function(id, hubId, x, y, w, h){
+var Desk = function(id, hubId, x, y, w, h, state){
     this.id = id;
 	this.hubId = hubId;
     this.x = x;
     this.y = y;
 	this.w = w;
 	this.h = h;
-    this.status = 0;
+    this.state = state;
 }
 
 Desk.prototype.draw = function(){
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
-	ctx.clearRect(0,0,canvas.width,canvas.height);
+	
+	// Interior
+	if (this.state == 0){
+		ctx.fillStyle = 'green';
+	}
+	else if (this.state == 1){
+		ctx.fillStyle = 'yellow';
+	}
+	else{
+		ctx.fillStyle = 'red';
+	}
+	ctx.fillRect(this.x, this.y, this.w, this.h);
+	
+	// Outline
 	ctx.strokeStyle = 'black';
-	var x = canvas.width * (this.x / 100);
-	var y = canvas.height * (this.y / 100);
-	var w = canvas.width * (this.w / 100);
-	var h = canvas.height * (this.h / 100);
-	ctx.rect(x, y, w, h);
+	ctx.lineWidth = 2;
+	ctx.beginPath();
+	ctx.rect(this.x, this.y, this.w, this.h);
 	ctx.stroke();
 }
 
-var Hub = function(id, x, y, h, w){
+var Hub = function(id, x, y, w, h){
 	this.id = id;
 	this.x = x;
 	this.y = y;
 	this.h = h;
 	this.w = w;
+	this.desks = new Array();
+	this.populated = false;
 }
 
 Hub.prototype.draw = function(){
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
-	ctx.clearRect(0,0,canvas.width,canvas.height);
-	ctx.strokeStyle = 'black';
-	var x = canvas.width * (this.x / 100);
-	var y = canvas.height * (this.y / 100);
-	var w = canvas.width * (this.w / 100);
-	var h = canvas.height * (this.h / 100);
-	ctx.rect(x, y, w, h);
-	ctx.stroke();
+	for (i = 0; i < this.desks.length; i++){
+		this.desks[i].draw();
+	}
+}
+
+// Given a desk id, return the desk object
+Hub.prototype.getDesk = function(id){
+	for (i = 0; i < this.desks.length; i++){
+		if (this.desks[i].id == id){
+			return this.desks[i];
+		}
+	}
 }
 
 var Floor = function(id, name){
     this.id = id;
 	this.name = name;
-    //this.mapName = mapName;
-    this.desks = [];
 	this.hubs = [];
 }
 
 Floor.prototype.updateDisplay = function(){
+	var dataFile = new XMLHttpRequest();
+	for (i = 0; i < this.hubs.length; i++){
+		dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.hubs[i].id + '/desks', true);
+		dataFile.send();
+		dataFile.onreadystatechange = updateHub(dataFile, this.hubs[i]);
+	}
+	clearInterval(intervalID);
+    intervalID = window.setInterval(function(){library.currentFloor.updateDisplay();}, REDRAW_TIME);
+	console.log('Screen updated: ' + Date())
+}
+
+function updateHub(dataFile, parentHub){
+	return function(){
+		if (dataFile.readyState == 4){
+			var str = dataFile.responseText;
+			var obj = JSON.parse(str);
+			for (i = 0; i < obj.length; i++){
+				var id = obj[i]['deskId'];
+				var hubId = obj[i]['deskHubId'];
+				var state = obj[i]['deskState'];
+				var desk = parentHub.getDesk(id);
+				if (desk.state != state){
+					desk.state = state;
+					desk.draw();
+				}
+			}
+			parentHub.draw();
+		}
+	}
+}
+
+Floor.prototype.updateDisplay_OLD = function(){
     
     // get the floor index and desk array
     var deskArray = [];
@@ -190,9 +235,6 @@ Floor.prototype.updateDisplay = function(){
     // intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
 }
 
-
-
-
 Floor.prototype.updateMap = function(){
     console.log("starting updateMap()");
     // load floor map
@@ -217,20 +259,35 @@ Floor.prototype.updateMap = function(){
         //var intervalID = window.setInterval(library.floors[library.currentFloor].updateDisplay(), 1000);        // remember to remove interval when switching floors
     }
 }
-
-//var Hub = function(id, x, y, h, w)
-
-Floor.prototype.initDesks = function(hubId){
+	
+Floor.prototype.initDesks = function(parentHub){
 	var dataFile = new XMLHttpRequest();
 	// Get the deskhubs for the floor
-	dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/floors/' + this.id + '/deskhubs', true);
+	dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + parentHub.id + '/desks', true);
     dataFile.send();
-    dataFile.onreadystatechange = function(){
-        if (dataFile.readyState == 4){
+	dataFile.onreadystatechange = populateHub(dataFile, parentHub);
+}
+
+function populateHub(dataFile, parentHub){
+	return function(){
+		if (dataFile.readyState == 4){
 			var str = dataFile.responseText;
 			var obj = JSON.parse(str);
+			for (i = 0; i < obj.length; i++){
+				var id = obj[i]['deskId'];
+				var hubId = obj[i]['deskHubId'];
+				var x = Math.round(parentHub.x + parentHub.w * obj[i]['coordinateX'] / 100);
+				var y = Math.round(parentHub.y + parentHub.h * obj[i]['coordinateY'] / 100);
+				var w = Math.round(parentHub.w * obj[i]['lengthX'] / 100);
+				var h = Math.round(parentHub.h * obj[i]['lengthY'] / 100);
+				var state = obj[i]['deskState'];
+				var tmpDesk = new Desk(id, hubId, x, y, w, h, state);
+				parentHub.desks.push(tmpDesk);
+			}
+			parentHub.populated = true;
+			parentHub.draw();
 		}
-	}
+	};
 }
 
 Floor.prototype.initHubs = function(){
@@ -242,15 +299,20 @@ Floor.prototype.initHubs = function(){
         if (dataFile.readyState == 4){
 			var str = dataFile.responseText;
 			var obj = JSON.parse(str);
+			library.clearCanvas();
+			library.currentFloor.hubs = [];
 			for (i = 0; i < obj.length; i++){
-				var x = canvasW * (obj[i]['coordinateX'] / 100);
-				var y = canvasH * (obj[i]['coordinateY'] / 100);
-				var w = canvasW * (obj[i]['LengthX'] / 100);
-				var h = canvasH * (obj[i]['LengthY'] / 100);
-				//library.currentFloor.hubs.push(new Hub(obj[i]['deskHubId'], obj[i]['coordinateX'], obj[i]['coordinateY'], 10, 10))
-				library.currentFloor.hubs.push(new Hub(obj[i]['deskHubId'], obj[i]['coordinateX'], obj[i]['coordinateY'], obj[i]['lengthX'], obj[i]['lengthY']))
-				
+				var x = Math.round(canvasW * (obj[i]['coordinateX'] / 100));
+				var y = Math.round(canvasH * (obj[i]['coordinateY'] / 100));
+				var w = Math.round(canvasW * (obj[i]['lengthX'] / 100));
+				var h = Math.round(canvasH * (obj[i]['lengthY'] / 100));
+				// library.currentFloor.hubs.push(new Hub(obj[i]['deskHubId'], obj[i]['coordinateX'], obj[i]['coordinateY'], obj[i]['lengthX'], obj[i]['lengthY']))
+				var tmpHub = new Hub(obj[i]['deskHubId'], x, y, w, h)
+				library.currentFloor.hubs.push(tmpHub)
+				library.currentFloor.initDesks(tmpHub);
 			}
+			clearInterval(intervalID);
+			intervalID = window.setInterval(function(){library.currentFloor.updateDisplay();}, REDRAW_TIME);
 		}
 	}
 }
@@ -259,8 +321,8 @@ Floor.prototype.initHubs = function(){
 var Library = function(){
     this.id = -1;
 	this.floors = new Array();
-	this.hubs = new Array();
-    this.currentFloor = 0;      // hold the index of the current floor
+	//this.hubs = new Array();
+    this.currentFloor = 0;      // hold a reference to the current floor
     this.name = "";
     
     // Get the library selected by the user
@@ -270,9 +332,12 @@ var Library = function(){
 	
 	this.updateTitle();
 	this.initFloors();
-	//this.floors[0].initHubs();
-	//this.currentFloor.initFloors();
-	//this.initDesks();
+}
+
+Library.prototype.clearCanvas = function(){
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	ctx.clearRect(0,0, canvas.width, canvas.height);
 }
 
 Library.prototype.initFloors = function(){
@@ -283,8 +348,7 @@ Library.prototype.initFloors = function(){
         if (dataFile.readyState == 4){
             var str = dataFile.responseText;
 			var obj = JSON.parse(str);
-			//library.floors = obj
-			//library.currentFloor = library.floors[0];	// set the first floor as the current floor
+			library.floors = []
 			for (i = 0; i < obj.length; i++){
 				
 				// Save basic floor information (ID and name)
@@ -341,7 +405,7 @@ Library.prototype.updateFloorLinks = function(){
     
     var i;
     for (i = 0; i < this.floors.length; i++){
-        if (this.currentFloor == i){
+        if (this.currentFloor == this.floors[i]){
             var text = document.createTextNode(this.floors[i].name);
             document.getElementById('floorList').appendChild(text);
         }
@@ -368,9 +432,11 @@ Library.prototype.updateFloorLinks = function(){
 // Change the floor displayed
 Library.prototype.changeFloor = function(floorName){
     console.log("Change floor request");
+	clearInterval(intervalID);
+	this.clearCanvas();
     var floorIndex = this.getFloorIndex(floorName); 
-    library.currentFloor = floorIndex;
-    library.floors[floorIndex].updateMap(); // may want to disable redraw before this
+    library.currentFloor = library.floors[floorIndex];
+    library.currentFloor.initHubs(); // may want to disable redraw before this
     library.updateFloorLinks();
 }
 
@@ -561,34 +627,3 @@ document.getElementById("button2seats").onclick = function(){library.floors[libr
 document.getElementById("button3seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(3);};
 document.getElementById("button4seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(4);};
 document.getElementById("button5seats").onclick = function(){library.floors[library.currentFloor].getFreeGroup(5);};
-
-var hub = new Hub(0, 20,20,20,20);
-hub.draw();
-
-
-// function TestTime(){
-	// var t0 = performance.now();
-	// library.floors[library.currentFloor].updateDisplay();
-	// var t1 = performance.now();
-	// console.log("Runtime: " + (t1 - t0) + " milliseconds");
-// }
-
-// function TestTime(){
-	// var t0 = performance.now();
-	// for (i = 0; i < 5; i++){
-		// library.floors[library.currentFloor].updateDisplay();
-	// }
-	// var t1 = performance.now();
-	// console.log("Runtime: " + (t1 - t0) + " milliseconds");
-// }
-
-// console.log('starting test....adsfas');
-// var dataFile = new XMLHttpRequest();
-
-// dataFile.open('get','http://20.20.2.57/Seatspotter/libraries',true);
-// dataFile.send();
-// dataFile.onreadystatechange = function(){
-    // var str = dataFile.responseText;
-    // console.log("data pulled from link: ");
-    // console.log(str);
-// }
