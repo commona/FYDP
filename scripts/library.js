@@ -85,8 +85,23 @@ var Desk = function(id, hubId, x, y, w, h, state){
 Desk.prototype.draw = function(){
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
-	ctx.clearRect(0,0,canvas.width,canvas.height);
+	
+	// Interior
+	if (this.state == 0){
+		ctx.fillStyle = 'green';
+	}
+	else if (this.state == 1){
+		ctx.fillStyle = 'yellow';
+	}
+	else{
+		ctx.fillStyle = 'red';
+	}
+	ctx.fillRect(this.x, this.y, this.w, this.h);
+	
+	// Outline
 	ctx.strokeStyle = 'black';
+	ctx.lineWidth = 2;
+	ctx.beginPath();
 	ctx.rect(this.x, this.y, this.w, this.h);
 	ctx.stroke();
 }
@@ -102,27 +117,17 @@ var Hub = function(id, x, y, w, h){
 }
 
 Hub.prototype.draw = function(){
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
-	//ctx.clearRect(0,0,canvas.width,canvas.height);
-	ctx.strokeStyle = 'black';
 	for (i = 0; i < this.desks.length; i++){
-		var tmpDesk = this.desks[i];
-		if (tmpDesk.state == 0){
-			ctx.fillStyle = 'green';
+		this.desks[i].draw();
+	}
+}
+
+// Given a desk id, return the desk object
+Hub.prototype.getDesk = function(id){
+	for (i = 0; i < this.desks.length; i++){
+		if (this.desks[i].id == id){
+			return this.desks[i];
 		}
-		else if (tmpDesk.state == 1){
-			ctx.fillStyle = 'yellow';
-		}
-		else{
-			ctx.fillStyle = 'red';
-		}
-		ctx.fillRect(tmpDesk.x, tmpDesk.y, tmpDesk.w, tmpDesk.h);
-		//ctx.clear(true);
-		ctx.beginPath();
-		ctx.rect(tmpDesk.x, tmpDesk.y, tmpDesk.w, tmpDesk.h);
-		ctx.lineWidth = 2;
-		ctx.stroke();
 	}
 }
 
@@ -133,6 +138,38 @@ var Floor = function(id, name){
 }
 
 Floor.prototype.updateDisplay = function(){
+	var dataFile = new XMLHttpRequest();
+	for (i = 0; i < this.hubs.length; i++){
+		dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.hubs[i].id + '/desks', true);
+		dataFile.send();
+		dataFile.onreadystatechange = updateHub(dataFile, this.hubs[i]);
+	}
+	clearInterval(intervalID);
+    intervalID = window.setInterval(function(){library.currentFloor.updateDisplay();}, REDRAW_TIME);
+	console.log('Screen updated: ' + Date())
+}
+
+function updateHub(dataFile, parentHub){
+	return function(){
+		if (dataFile.readyState == 4){
+			var str = dataFile.responseText;
+			var obj = JSON.parse(str);
+			for (i = 0; i < obj.length; i++){
+				var id = obj[i]['deskId'];
+				var hubId = obj[i]['deskHubId'];
+				var state = obj[i]['deskState'];
+				var desk = parentHub.getDesk(id);
+				if (desk.state != state){
+					desk.state = state;
+					desk.draw();
+				}
+			}
+			parentHub.draw();
+		}
+	}
+}
+
+Floor.prototype.updateDisplay_OLD = function(){
     
     // get the floor index and desk array
     var deskArray = [];
@@ -244,7 +281,8 @@ function populateHub(dataFile, parentHub){
 				var w = Math.round(parentHub.w * obj[i]['lengthX'] / 100);
 				var h = Math.round(parentHub.h * obj[i]['lengthY'] / 100);
 				var state = obj[i]['deskState'];
-				parentHub.desks.push(new Desk(id, hubId, x, y, w, h, state));
+				var tmpDesk = new Desk(id, hubId, x, y, w, h, state);
+				parentHub.desks.push(tmpDesk);
 			}
 			parentHub.populated = true;
 			parentHub.draw();
@@ -273,6 +311,8 @@ Floor.prototype.initHubs = function(){
 				library.currentFloor.hubs.push(tmpHub)
 				library.currentFloor.initDesks(tmpHub);
 			}
+			clearInterval(intervalID);
+			intervalID = window.setInterval(function(){library.currentFloor.updateDisplay();}, REDRAW_TIME);
 		}
 	}
 }
@@ -392,6 +432,7 @@ Library.prototype.updateFloorLinks = function(){
 // Change the floor displayed
 Library.prototype.changeFloor = function(floorName){
     console.log("Change floor request");
+	clearInterval(intervalID);
 	this.clearCanvas();
     var floorIndex = this.getFloorIndex(floorName); 
     library.currentFloor = library.floors[floorIndex];
