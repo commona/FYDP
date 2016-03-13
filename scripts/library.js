@@ -12,7 +12,7 @@
 // clearInterval(intervalID)
 
 var intervalID;             // ID for the timer that redraws the seats
-const REDRAW_TIME = 60000;   // amount of time (in ms) for desk statuses to be refreshed
+const REDRAW_TIME = 5000;   // amount of time (in ms) for desk statuses to be refreshed
 var canvasW, canvasH;
 
 // Objects
@@ -102,19 +102,6 @@ Floor.prototype.updateDisplay = function(){
 	this.draw();
 	for (i = 0; i < this.hubs.length; i++){
 		this.hubs[i].update();
-		
-		// dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.hubs[i].id + '/desks', true);
-		// dataFile.send();
-		// dataFile.onreadystatechange = updateHub(dataFile, this.hubs[i]);
-		
-		
-		// dataFile.onreadystatechange = function(i){return function(){console.log('new data received'); updateHub(dataFile, this.hubs[i]);};};
-		// dataFile.onreadystatechange = function(i){
-			// return function(){
-				// console.log('updating hub ' + i);
-				// updateHub(dataFile, this.hubs[i]);
-			// }
-		// }
 	}
 	
 	clearInterval(intervalID);
@@ -127,11 +114,8 @@ Hub.prototype.update = function(){
 	var parentHub = this;
 	dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.id + '/desks', true);
 	dataFile.send();
-	dataFile.onreadystatechange = updateHub(dataFile, parentHub);
-}
-
-function updateHub(dataFile, parentHub){
-	return function(){
+	// dataFile.onreadystatechange = updateHub(dataFile, parentHub);
+	dataFile.onreadystatechange = function(){
 		if (dataFile.readyState == 4){
 			var str = dataFile.responseText;
 			var obj = JSON.parse(str);
@@ -146,33 +130,9 @@ function updateHub(dataFile, parentHub){
 				}
 			}
 			parentHub.draw();
-		}
-	};
-}
-
-function updateHubOLD(dataFile, parentHub){
-	return function(){
-		if (dataFile.readyState == 4){
-			console.log('updating hub ' + parentHub.id);
-			
-			var str = dataFile.responseText;
-			var obj = JSON.parse(str);
-			for (i = 0; i < obj.length; i++){
-				var id = obj[i]['deskId'];
-				var hubId = obj[i]['deskHubId'];
-				var state = obj[i]['deskState'];
-				var desk = parentHub.getDesk(id);
-				if (desk.state != state){
-					desk.state = state;
-					desk.draw();
-				}
-			}
-			parentHub.draw();
-			
 		}
 	}
 }
-
 	
 Floor.prototype.initDesks = function(parentHub){
 	var dataFile = new XMLHttpRequest();
@@ -358,6 +318,7 @@ Library.prototype.changeFloor = function(floorName){
 	this.clearCanvas();
     var floorIndex = this.getFloorIndex(floorName); 
     library.currentFloor = library.floors[floorIndex];
+	library.currentFloor.hubReadyCount = 0;
     library.currentFloor.initHubs(); // may want to disable redraw before this
     library.updateFloorLinks();
 }
