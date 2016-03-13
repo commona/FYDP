@@ -1,5 +1,6 @@
 // search.js
 
+var distanceThreshold = 1.2;
 var medianDist = 0;
 
 // Returns the distance in pixels between two desks
@@ -71,16 +72,47 @@ function getDesks(floor, state){
 // the nearby desks will be removed from the original array and sent back to the caller
 function getNearbyDesks(desk, arr){
 	var output = [];
-	var uBound = medianDist * 1.2;
-	var lBound = medianDist * 0.8;
+	var uBound = medianDist * distanceThreshold;
+	var i;
 	var d = 0;
 	for(i = arr.length - 1; i >= 0; i--){
 		d = getDeskDistance(desk, arr[i]);
-		if (d > lBound && d < uBound){
+		if ( d < uBound){
 			output.push(arr.splice(i,1)[0]);
 		}
 	}
 	return [output, arr];
+}
+
+// For each desk, identify nearby desks and save references on each nearby desk
+Floor.prototype.populateNearbyDesks = function(){
+	var i;
+	var desks = [];
+	desks = getDesks(this, -1);
+	for (i = 0; i < desks.length; i++){
+		getNearbyDesksDirectional(desks[i], desks);
+	}
+}
+
+// Locate nearby desks, including their direction, and update the desk object with references/IDs to those nearby desks
+function getNearbyDesksDirectional(desk, arr){
+	var uBound = medianDist * distanceThreshold;
+	var dX, dY
+	var i;
+	for (i = 0; i < arr.length; i++){
+		if (desk.id != arr[i].id && getDeskDistance(desk, arr[i]) < uBound ){
+			dX = arr[i].x - desk.x;
+			dY = arr[i].y - desk.y;
+			if (Math.abs(dX) > Math.abs(dY)){
+				if (dX > 0) desk.rDesk = arr[i];
+				else desk.lDesk = arr[i];
+			}
+			else{
+				if (dY > 0) desk.dDesk = arr[i];
+				else desk.uDesk = arr[i];
+			}
+		}
+	}
 }
 
 // Append 2 arrays

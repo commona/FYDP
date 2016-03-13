@@ -24,6 +24,9 @@ var Desk = function(id, hubId, x, y, w, h, state){
 	this.w = w;
 	this.h = h;
     this.state = state;
+	
+	// identify which desks are nearby in which direction they are in
+	var rDesk, dDesk, lDesk, uDesk;
 }
 
 Desk.prototype.draw = function(){
@@ -80,6 +83,7 @@ var Floor = function(id, name){
     this.id = id;
 	this.name = name;
 	this.hubs = [];
+	this.hubReadyCount = 0;
 }
 
 Floor.prototype.draw = function(){
@@ -118,6 +122,7 @@ function updateHub(dataFile, parentHub){
 				}
 			}
 			parentHub.draw();
+			
 		}
 	}
 }
@@ -130,6 +135,8 @@ Floor.prototype.initDesks = function(parentHub){
     dataFile.send();
 	dataFile.onreadystatechange = populateHub(dataFile, parentHub);
 }
+
+
 
 function populateHub(dataFile, parentHub){
 	return function(){
@@ -148,7 +155,12 @@ function populateHub(dataFile, parentHub){
 				parentHub.desks.push(tmpDesk);
 			}
 			parentHub.populated = true;
+			library.currentFloor.hubReadyCount++;
 			parentHub.draw();
+			if (library.currentFloor.hubReadyCount == library.currentFloor.hubs.length){
+				medianDist = getFloorMedian(library.currentFloor);
+				library.currentFloor.populateNearbyDesks();
+			}
 		}
 	};
 }
