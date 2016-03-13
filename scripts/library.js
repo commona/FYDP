@@ -12,7 +12,7 @@
 // clearInterval(intervalID)
 
 var intervalID;             // ID for the timer that redraws the seats
-const REDRAW_TIME = 5000;   // amount of time (in ms) for desk statuses to be refreshed
+const REDRAW_TIME = 60000;   // amount of time (in ms) for desk statuses to be refreshed
 var canvasW, canvasH;
 
 // Objects
@@ -88,27 +88,73 @@ var Floor = function(id, name){
 
 Floor.prototype.draw = function(){
 	var i;
+	//clearInterval(highlightIntId);
 	library.clearCanvas();
 	for (i = 0; i < library.currentFloor.hubs.length; i++){
 		library.currentFloor.hubs[i].draw();
 	}
+	console.log('floor re-drawn');
 }
 
 Floor.prototype.updateDisplay = function(){
 	var dataFile = new XMLHttpRequest();
+	var i;
+	this.draw();
 	for (i = 0; i < this.hubs.length; i++){
-		dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.hubs[i].id + '/desks', true);
-		dataFile.send();
-		dataFile.onreadystatechange = updateHub(dataFile, this.hubs[i]);
+		this.hubs[i].update();
+		
+		// dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.hubs[i].id + '/desks', true);
+		// dataFile.send();
+		// dataFile.onreadystatechange = updateHub(dataFile, this.hubs[i]);
+		
+		
+		// dataFile.onreadystatechange = function(i){return function(){console.log('new data received'); updateHub(dataFile, this.hubs[i]);};};
+		// dataFile.onreadystatechange = function(i){
+			// return function(){
+				// console.log('updating hub ' + i);
+				// updateHub(dataFile, this.hubs[i]);
+			// }
+		// }
 	}
+	
 	clearInterval(intervalID);
     intervalID = window.setInterval(function(){library.currentFloor.updateDisplay();}, REDRAW_TIME);
 	console.log('Screen updated: ' + Date())
 }
 
+Hub.prototype.update = function(){
+	var dataFile = new XMLHttpRequest();
+	var parentHub = this;
+	dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/deskhubs/' + this.id + '/desks', true);
+	dataFile.send();
+	dataFile.onreadystatechange = updateHub(dataFile, parentHub);
+}
+
 function updateHub(dataFile, parentHub){
 	return function(){
 		if (dataFile.readyState == 4){
+			var str = dataFile.responseText;
+			var obj = JSON.parse(str);
+			for (i = 0; i < obj.length; i++){
+				var id = obj[i]['deskId'];
+				var hubId = obj[i]['deskHubId'];
+				var state = obj[i]['deskState'];
+				var desk = parentHub.getDesk(id);
+				if (desk.state != state){
+					desk.state = state;
+					desk.draw();
+				}
+			}
+			parentHub.draw();
+		}
+	};
+}
+
+function updateHubOLD(dataFile, parentHub){
+	return function(){
+		if (dataFile.readyState == 4){
+			console.log('updating hub ' + parentHub.id);
+			
 			var str = dataFile.responseText;
 			var obj = JSON.parse(str);
 			for (i = 0; i < obj.length; i++){
@@ -354,7 +400,7 @@ document.getElementById("buttonRandom").onclick = function(){
 
 // Manually poll
 document.getElementById('buttonPoll').onclick = function(){
-	library.currentFloor.initHubs();
+	library.currentFloor.updateDisplay();
 }
 
 // start the application

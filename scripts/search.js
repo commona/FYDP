@@ -1,5 +1,7 @@
 // search.js
 
+var clearHighlightTime = 5000;
+var highlightIntId;
 var distanceThreshold = 1.2;
 var medianDist = 0;
 
@@ -68,6 +70,22 @@ function getDesks(floor, state){
 	return desks;
 }
 
+// Checks if a desk is across from another (function assumes that the 2 desks are within range)
+function isDeskAcross(d1, d2){
+	if (d1.lDesk == d2 || d1.rDesk == d2){
+		if (d1.uDesk != null && d1.dDesk != null)
+			return true;
+		else
+			return false;
+	}
+	else if (d1.uDesk == d2 || d1.dDesk == d2){
+		if (d1.lDesk != null && d1.rDesk != null)
+			return true;
+		else
+			return false;
+	}
+}
+
 // given a desk, and an array of desks, the function will return a list of desks that are nearby
 // the nearby desks will be removed from the original array and sent back to the caller
 function getNearbyDesks(desk, arr){
@@ -77,7 +95,7 @@ function getNearbyDesks(desk, arr){
 	var d = 0;
 	for(i = arr.length - 1; i >= 0; i--){
 		d = getDeskDistance(desk, arr[i]);
-		if ( d < uBound){
+		if (d < uBound && !( isDeskAcross(desk, arr[i]) )){
 			output.push(arr.splice(i,1)[0]);
 		}
 	}
@@ -161,8 +179,80 @@ function getDeskGroups(desks, numFree){
 	return output;
 }
 
-// Highlight a group of desks
+// Check if a desk is in an array
+function isInArray(desk, arr){
+	var i;
+	for (i = 0; i < arr.length; i++){
+		if (desk == arr[i]) return true
+	}
+	return false;
+}
+
+// Return an array of lines needed to highlight a single desk in a group
+// line format: [x1,y1,x2,y2]
+function getDeskLines(desk, arr){
+	var output = [];
+	if (!isInArray(desk.rDesk, arr))
+		output.push([desk.x + desk.w, desk.y, desk.x + desk.w, desk.y + desk.h ])
+	if (!isInArray(desk.dDesk, arr))
+		output.push([desk.x, desk.y + desk.h, desk.x + desk.w, desk.y + desk.h ])
+	if (!isInArray(desk.lDesk, arr))
+		output.push([desk.x, desk.y, desk.x, desk.y + desk.h ])
+	if (!isInArray(desk.uDesk, arr))
+		output.push([desk.x, desk.y, desk.x + desk.w, desk.y ])
+	return output;
+}
+
+// Return an array of lines needed to highlight a group of desks
+function getGroupLines(desks){
+	var i;
+	var lines = [];
+	var tempLines = [];
+	for(i = 0; i < desks.length; i++){
+		tempLines = getDeskLines(desks[i], desks);
+		lines = appendArrays(lines, tempLines);
+	}
+	return lines;
+}
+
+// Draw highlight given an array of lines
 function highlightGroup(desks){
+	var i;
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	var lines;
+	lines = getGroupLines(desks);
+	ctx.shadowBlur = 20;
+	ctx.shadowColor = 'black';
+	ctx.strokeStyle = 'cyan';
+	ctx.lineWidth = 6;
+	ctx.lineCap = 'round';
+	ctx.beginPath();
+	for (i = 0; i < lines.length; i++){
+		ctx.moveTo(parseInt(lines[i][0]), parseInt(lines[i][1]));
+		ctx.lineTo(parseInt(lines[i][2]), parseInt(lines[i][3]));
+	}
+	ctx.stroke();
+	
+	ctx.shadowBlur = 0;
+	clearInterval(highlightIntId);
+	highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
+}
+
+//testFunction();
+function testFunction(){
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	ctx.beginPath();
+	ctx.moveTo(5,5);
+	ctx.lineTo(50,5);
+	ctx.moveTo(5,20);
+	ctx.lineTo(50,20);
+	ctx.stroke();
+}
+
+// Highlight a group of desks
+function highlightGroup_OLD(desks){
 	var i;
 	// get top left and bottom right corners
 	var topLeft = [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
@@ -180,7 +270,6 @@ function highlightGroup(desks){
 	
 	ctx.shadowBlur = 20;
 	ctx.shadowColor = 'black';
-	
 	ctx.strokeStyle = 'cyan';
 	ctx.lineWidth = 6;
 	ctx.beginPath();
@@ -188,12 +277,18 @@ function highlightGroup(desks){
 	ctx.stroke();
 	
 	ctx.shadowBlur = 0;
+	
+	clearInterval(highlightIntId);
+	highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
 }
 
 Floor.prototype.getFreeGroup = function(numFree){
 	var i, j;
 	var desks = [];
 	var groups = [];
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	
 	desks = getDesks(this, 0);
 	if (medianDist == 0){
 		medianDist = getFloorMedian(this);
@@ -203,6 +298,7 @@ Floor.prototype.getFreeGroup = function(numFree){
 	for(i = 0; i < groups.length; i++){
 		highlightGroup(groups[i]);
 	}
+	ctx.stroke();
 	console.log(groups);
 }
 
