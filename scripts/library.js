@@ -12,7 +12,7 @@
 // clearInterval(intervalID)
 
 var intervalID;             // ID for the timer that redraws the seats
-const REDRAW_TIME = 60000;   // amount of time (in ms) for desk statuses to be refreshed
+const REDRAW_TIME = 5000;   // amount of time (in ms) for desk statuses to be refreshed
 var canvasW, canvasH;
 
 // Objects
