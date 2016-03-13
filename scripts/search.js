@@ -215,41 +215,25 @@ function getGroupLines(desks){
 	return lines;
 }
 
-// Draw highlight given an array of lines
+// Draw highlight lines given a group of desks
 function highlightGroup(desks){
 	var i;
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	var lines;
 	lines = getGroupLines(desks);
-	ctx.shadowBlur = 20;
-	ctx.shadowColor = 'black';
-	ctx.strokeStyle = 'cyan';
-	ctx.lineWidth = 6;
-	ctx.lineCap = 'round';
-	ctx.beginPath();
+	
+	//ctx.beginPath();
 	for (i = 0; i < lines.length; i++){
 		ctx.moveTo(parseInt(lines[i][0]), parseInt(lines[i][1]));
 		ctx.lineTo(parseInt(lines[i][2]), parseInt(lines[i][3]));
 	}
-	ctx.stroke();
-	ctx.shadowBlur = 0;
+	// ctx.stroke();
+	// ctx.shadowBlur = 0;
 	
 	clearTimeout(highlightIntId);
 	//highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
 	highlightIntId = setTimeout(function(){library.currentFloor.draw(); highlightIntId = 0;}, clearHighlightTime);
-}
-
-//testFunction();
-function testFunction(){
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
-	ctx.beginPath();
-	ctx.moveTo(5,5);
-	ctx.lineTo(50,5);
-	ctx.moveTo(5,20);
-	ctx.lineTo(50,20);
-	ctx.stroke();
 }
 
 // Highlight a group of desks
@@ -299,10 +283,18 @@ Floor.prototype.getFreeGroup = function(numFree){
 	}
 	groups = getDeskGroups(desks, numFree);
 	this.draw();
+	
+	ctx.beginPath();
 	for(i = 0; i < groups.length; i++){
 		highlightGroup(groups[i]);
 	}
+	ctx.shadowBlur = 20;
+	ctx.shadowColor = 'black';
+	ctx.strokeStyle = 'cyan';
+	ctx.lineWidth = 6;
+	ctx.lineCap = 'round';
 	ctx.stroke();
+	ctx.shadowBlur = 0;
 	console.log(groups);
 }
 
