@@ -97,11 +97,14 @@ Floor.prototype.draw = function(){
 }
 
 Floor.prototype.updateDisplay = function(){
-	var dataFile = new XMLHttpRequest();
 	var i;
-	this.draw();
-	for (i = 0; i < this.hubs.length; i++){
-		this.hubs[i].update();
+	
+	// Only update the display if there are no highlighted desks on the screen
+	if (highlightIntId == 0){
+		this.draw();
+		for (i = 0; i < this.hubs.length; i++){
+			this.hubs[i].update();
+		}
 	}
 	
 	clearInterval(intervalID);

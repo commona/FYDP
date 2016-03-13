@@ -1,7 +1,7 @@
 // search.js
 
 var clearHighlightTime = 5000;
-var highlightIntId;
+var highlightIntId = 0;
 var distanceThreshold = 1.2;
 var medianDist = 0;
 
@@ -233,10 +233,11 @@ function highlightGroup(desks){
 		ctx.lineTo(parseInt(lines[i][2]), parseInt(lines[i][3]));
 	}
 	ctx.stroke();
-	
 	ctx.shadowBlur = 0;
-	clearInterval(highlightIntId);
-	highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
+	
+	clearTimeout(highlightIntId);
+	//highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
+	highlightIntId = setTimeout(function(){library.currentFloor.draw(); highlightIntId = 0;}, clearHighlightTime);
 }
 
 //testFunction();
@@ -286,6 +287,9 @@ Floor.prototype.getFreeGroup = function(numFree){
 	var i, j;
 	var desks = [];
 	var groups = [];
+	
+	//clearInterval(highlightIntId);
+	
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	
