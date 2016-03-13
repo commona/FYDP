@@ -228,51 +228,17 @@ function highlightGroup(desks){
 		ctx.moveTo(parseInt(lines[i][0]), parseInt(lines[i][1]));
 		ctx.lineTo(parseInt(lines[i][2]), parseInt(lines[i][3]));
 	}
-	// ctx.stroke();
-	// ctx.shadowBlur = 0;
 	
 	clearTimeout(highlightIntId);
 	//highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
 	highlightIntId = setTimeout(function(){library.currentFloor.draw(); highlightIntId = 0;}, clearHighlightTime);
 }
 
-// Highlight a group of desks
-function highlightGroup_OLD(desks){
-	var i;
-	// get top left and bottom right corners
-	var topLeft = [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
-	var bottomRight = [0,0];
-	for (i = 0; i < desks.length; i++){
-		if (desks[i].x < topLeft[0]) topLeft[0] = desks[i].x;
-		if (desks[i].y < topLeft[1]) topLeft[1] = desks[i].y;
-		if (desks[i].x + desks[i].w > bottomRight[0]) bottomRight[0] = desks[i].x + desks[i].w;
-		if (desks[i].y + desks[i].h > bottomRight[1]) bottomRight[1] = desks[i].y + desks[i].h;
-	}
-	
-	// Draw blue rectangle
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
-	
-	ctx.shadowBlur = 20;
-	ctx.shadowColor = 'black';
-	ctx.strokeStyle = 'cyan';
-	ctx.lineWidth = 6;
-	ctx.beginPath();
-	ctx.rect(topLeft[0], topLeft[1], bottomRight[0] - topLeft[0] , bottomRight[1] - topLeft[1] );
-	ctx.stroke();
-	
-	ctx.shadowBlur = 0;
-	
-	clearInterval(highlightIntId);
-	highlightIntId = window.setInterval(function(){clearInterval(highlightIntId); library.currentFloor.draw(); }, clearHighlightTime);
-}
 
 Floor.prototype.getFreeGroup = function(numFree){
 	var i, j;
 	var desks = [];
 	var groups = [];
-	
-	//clearInterval(highlightIntId);
 	
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
@@ -298,141 +264,6 @@ Floor.prototype.getFreeGroup = function(numFree){
 	console.log(groups);
 }
 
-Floor.prototype.getFreeGroup_OLD = function(numFree){
-    
-    // Calculate the distance from each point to its nearest point
-    var minDistances = [];
-    var i;
-    var j;
-    for(i = 0; i < this.desks.length; i++){
-        var distances = [];
-        for (j = 0; j < this.desks.length; j++){
-            if (j != i){
-                // calculate distance between seats
-                distances.push( Math.sqrt( Math.pow(this.desks[i].x - this.desks[j].x, 2) + Math.pow(this.desks[i].y - this.desks[j].y, 2) ));
-            }
-        }
-        minDistances.push(Math.min.apply(Math, distances));     // get the distance from this desk to the next closest desk
-    }
-    
-    //console.log(minDistances);
-    
-    // Get the median distance of the space between desks
-    minDistances.sort();
-    var median;
-    if (minDistances.length % 2 == 0)
-        median = (minDistances[minDistances.length/2 - 1] + minDistances[minDistances.length/2 - 1])/2
-    else
-        median = minDistances[minDistances.length/2 - 0.5];
-    
-    // calculate the upper bound and lower bound
-    var upperBound = median * 1.25;
-    var lowerBound = median * 0.75;
-    
-    // Duplicate the desks array
-    var freeDesks = this.desks.slice();
-    
-    // remove desks that are occupied/have something on the desk
-    for (i = freeDesks.length-1; i >= 0; i--){
-        if (freeDesks[i].status != 2)
-            freeDesks.splice(i,1);
-    }
-    //console.log(freeDesks);
-    
-    // go through the new desk array and try to find available desks that are within the median distance, taking out those are aren't within a group
-    var foundFlag = false;
-    
-    var deskGroup = [];         // array to hold currently examined group of desks
-    var groupArray = [];        // array of groups of desks (because there may be multiple locations where x number of desks of free)
-    while (freeDesks.length > 0){
-        foundFlag = false;
-        deskGroup = [];
-        deskGroup.push( freeDesks.splice(0,1)[0] );
-        // loop through all desks in the group
-        for (i = 0; i < deskGroup.length; i++){
-            // finds desks closeby to the currently examined desk
-            for (j = freeDesks.length-1; j >= 0; j--){      // performance may worsen because working backwards
-                var distance = Math.sqrt( Math.pow(deskGroup[i].x - freeDesks[j].x, 2) + Math.pow(deskGroup[i].y - freeDesks[j].y, 2) );
-                if (distance <= upperBound && distance >= lowerBound)
-                    deskGroup.push( freeDesks.splice(j,1)[0] );
-                if (deskGroup.length >= numFree){
-                    foundFlag = true;
-                    break;
-                }
-            }
-            if (foundFlag == true)
-                break;
-        }
-        if (foundFlag == true){
-            groupArray.push(deskGroup.slice());
-            //break;
-        }
-    }
-    console.log("group array:");
-    console.log(groupArray);
-    
-    
-    // if a suitable set of desks has not been found, exit function
-    if (groupArray.length == 0){
-        this.updateDisplay();   // clear any previously displayed blue boxes
-        return;
-    }
-    
-    // calculate the top-left corner and bottom-right corner of the box
-    var topLeft = [deskGroup[0].x - deskGroup[0].size, deskGroup[0].y - deskGroup[0].size];
-    var bottomRight = [deskGroup[0].x + deskGroup[0].size, deskGroup[0].y + deskGroup[0].size];
-    for (i = 1; i < deskGroup.length; i++){
-        if (topLeft[0] > deskGroup[i].x - deskGroup[i].size)
-            topLeft[0] = deskGroup[i].x - deskGroup[i].size;
-        if (topLeft[1] > deskGroup[i].y - deskGroup[i].size)
-            topLeft[1] = deskGroup[i].y - deskGroup[i].size;
-        if (bottomRight[0] < deskGroup[i].x + deskGroup[i].size)
-            bottomRight[0] = deskGroup[i].x + deskGroup[i].size;
-        if (bottomRight[1] < deskGroup[i].y + deskGroup[i].size)
-            bottomRight[1] = deskGroup[i].y + deskGroup[i].size;
-    }
-    var width = bottomRight[0] - topLeft[0];
-    var height = bottomRight[1] - topLeft[1];
-    console.log(topLeft);
-    console.log(bottomRight);
-    
-    // draw blue rectangle around the desks
-    var canvas = document.getElementById('canvas');
-    
-    if (canvas.getContext){
-        var ctx = canvas.getContext('2d');
-        
-        // update the display to remove previous boxed desk groups
-        this.updateDisplay();
-        clearInterval(intervalID);
-        intervalID = window.setInterval(function(){library.floors[library.currentFloor].updateDisplay();}, REDRAW_TIME);
-        
-        for (i = 0; i < groupArray.length; i++){
-
-            var topLeft = [groupArray[i][0].x - groupArray[i][0].size, groupArray[i][0].y - groupArray[i][0].size];
-            var bottomRight = [groupArray[i][0].x + groupArray[i][0].size, groupArray[i][0].y + groupArray[i][0].size];
-            for (j = 1; j < groupArray[i].length; j++){
-                if (topLeft[0] > groupArray[i][j].x - groupArray[i][j].size)
-                    topLeft[0] = groupArray[i][j].x - groupArray[i][j].size;
-                if (topLeft[1] > groupArray[i][j].y - groupArray[i][j].size)
-                    topLeft[1] = groupArray[i][j].y - groupArray[i][j].size;
-                if (bottomRight[0] < groupArray[i][j].x + groupArray[i][j].size)
-                    bottomRight[0] = groupArray[i][j].x + groupArray[i][j].size;
-                if (bottomRight[1] < groupArray[i][j].y + groupArray[i][j].size)
-                    bottomRight[1] = groupArray[i][j].y + groupArray[i][j].size;
-            }
-            
-            var width = bottomRight[0] - topLeft[0];
-            var height = bottomRight[1] - topLeft[1];
-            
-            // Draw rectangle
-            ctx.strokeStyle = "blue";
-            ctx.lineWidth=3;
-            ctx.strokeRect(topLeft[0], topLeft[1], width, height);
-        }
-    }
-
-}
 
 // assign function to buttons
 document.getElementById("button2seats").onclick = function(){library.currentFloor.getFreeGroup(2);};

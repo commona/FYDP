@@ -145,8 +145,7 @@ Floor.prototype.initDesks = function(parentHub){
 	dataFile.onreadystatechange = populateHub(dataFile, parentHub);
 }
 
-
-
+// Read in desk properties
 function populateHub(dataFile, parentHub){
 	return function(){
 		if (dataFile.readyState == 4){
@@ -174,6 +173,7 @@ function populateHub(dataFile, parentHub){
 	};
 }
 
+// Initialize hubs
 Floor.prototype.initHubs = function(){
 	var dataFile = new XMLHttpRequest();
 	// Get the deskhubs for the floor
@@ -224,6 +224,7 @@ Library.prototype.clearCanvas = function(){
 	ctx.clearRect(0,0, canvas.width, canvas.height);
 }
 
+// Initialize library floors
 Library.prototype.initFloors = function(){
 	var dataFile = new XMLHttpRequest();
 	dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/libraries/' + this.id + '/floors', true);
@@ -268,6 +269,7 @@ Library.prototype.initFloors = function(){
 	}
 }
 
+// Update library title
 Library.prototype.updateTitle = function(){
 	var dataFile = new XMLHttpRequest();
 	dataFile.open('get', 'http://seatspotter.azurewebsites.net/seatspotter/webapi/libraries/' + this.id, true);
@@ -316,6 +318,8 @@ Library.prototype.updateFloorLinks = function(){
 // Change the floor displayed
 Library.prototype.changeFloor = function(floorName){
     console.log("Change floor request");
+	clearTimeout(highlightIntId);
+	highlightIntId = 0;
 	clearInterval(intervalID);
 	medianDist = 0;
 	this.clearCanvas();
@@ -346,7 +350,7 @@ document.getElementById("buttonRandom").onclick = function(){
 	// Stop polling
 	clearInterval(intervalID);
 	
-    // randomize statuses
+    // Randomize statuses
 	var i, j;
     for (i = 0; i < library.currentFloor.hubs.length; i++){
 		for (j = 0; j < library.currentFloor.hubs[i].desks.length; j++){
@@ -357,13 +361,16 @@ document.getElementById("buttonRandom").onclick = function(){
 			}
 			library.currentFloor.hubs[i].desks[j].state = randStatus;
 		}
-		//library.currentFloor.hubs[i].draw();
 	}
 	library.currentFloor.draw();
 }
 
 // Manually poll
 document.getElementById('buttonPoll').onclick = function(){
+	// Remove any highlighting
+	clearTimeout(highlightIntId);
+	highlightIntId = 0;
+	
 	library.currentFloor.updateDisplay();
 }
 
